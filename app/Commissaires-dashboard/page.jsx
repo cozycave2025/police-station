@@ -129,9 +129,10 @@ export default function PoliceDashboard() {
     try {
       const res = await fetch("/api/police_agent/officers");
       const data = await res.json();
-      setOfficers(data);
+      setOfficers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
+      setOfficers([]);
     }
   };
   
@@ -158,6 +159,24 @@ export default function PoliceDashboard() {
       console.error(err);
       alert("Something went wrong!");
     }
+  };
+
+  const startEdit = (officer) => {
+    setEditingOfficer(officer);
+    setNewOfficer({
+      name: officer.name,
+      rank: officer.rank,
+      badge: officer.badge,
+      username: officer.username,
+      password: officer.password
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingOfficer) return;
+    await editOfficer(editingOfficer.id, newOfficer);
+    setEditingOfficer(null);
+    setNewOfficer({ name: "", rank: "", badge: "", username: "", password: "" });
   };
   // Complaint functions
   const moveToInvestigation = (id) => {
@@ -288,8 +307,8 @@ export default function PoliceDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {officers.map((officer) => (
-                    <tr key={officer.id} className="hover:bg-gray-100">
+                  {Array.isArray(officers) && officers.map((officer) => (
+                    <tr key={officer.id || officer._id} className="hover:bg-gray-100">
                       <td className="p-3 border">{officer.name}</td>
                       <td className="p-3 border">{officer.rank}</td>
                       <td className="p-3 border">{officer.badge}</td>
@@ -316,10 +335,7 @@ export default function PoliceDashboard() {
             </div>
             <br />
 
-            {/* Map Section */}
-            <div className="mt-6 bg-white shadow rounded-lg p-4">
-              <h3 className="text-xl font-bold mb-4">Police Map</h3>
-            </div>
+           
           </>
         )}
 
@@ -341,10 +357,10 @@ export default function PoliceDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {complaints
+                  {Array.isArray(complaints) && complaints
                     .filter((c) => c.status === "Pending")
                     .map((complaint) => (
-                      <tr key={complaint._id} className="hover:bg-gray-100">
+                      <tr key={complaint._id || complaint.id} className="hover:bg-gray-100">
                         <td className="p-3 border">{complaint.complaintId}</td>
                         <td className="p-3 border">{complaint.name}</td>
                         <td className="p-3 border">{complaint.title}</td>
@@ -391,10 +407,10 @@ export default function PoliceDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {complaints
+                  {Array.isArray(complaints) && complaints
                     .filter((c) => c.status === "Under Investigation")
                     .map((complaint) => (
-                      <tr key={complaint._id} className="hover:bg-gray-100">
+                      <tr key={complaint._id || complaint.id} className="hover:bg-gray-100">
                         <td className="p-3 border">{complaint.complaintId}</td>
                         <td className="p-3 border">{complaint.name}</td>
                         <td className="p-3 border">{complaint.title}</td>
@@ -435,10 +451,10 @@ export default function PoliceDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {complaints
+                  {Array.isArray(complaints) && complaints
                     .filter((c) => c.status === "Closed")
                     .map((complaint) => (
-                      <tr key={complaint._id} className="hover:bg-gray-100">
+                      <tr key={complaint._id || complaint.id} className="hover:bg-gray-100">
                         <td className="p-3 border">{complaint.complaintId}</td>
                         <td className="p-3 border">{complaint.name}</td>
                         <td className="p-3 border">{complaint.title}</td>
