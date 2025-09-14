@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, User, FileText, Shield, Archive } from "lucide-react";
-import GuineaMap from "../../components/GuineaMap";
 
 export default function PoliceDashboard() {
   useEffect(() => {
@@ -320,7 +319,6 @@ export default function PoliceDashboard() {
             {/* Map Section */}
             <div className="mt-6 bg-white shadow rounded-lg p-4">
               <h3 className="text-xl font-bold mb-4">Police Map</h3>
-              <GuineaMap />
             </div>
           </>
         )}
