@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { FileText, Shield, Archive, LogOut } from "lucide-react";
-import GuineaMap from "../../components/GuineaMap";
 
 export default function OfficerDashboard() {
   useEffect(() => {
