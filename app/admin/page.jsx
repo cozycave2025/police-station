@@ -24,6 +24,8 @@ export default function AdminDashboard() {
   const [showStationModal, setShowStationModal] = useState(false);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
+  const [showHeadlineNewsModal, setShowHeadlineNewsModal] = useState(false);
+  const [showBannerNewsModal, setShowBannerNewsModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -90,13 +92,33 @@ export default function AdminDashboard() {
     },
   ];
 
-  // News data structure
+  // News data structures
   const defaultNews = [
     {
       id: 1,
       title: "New Police Initiative Launched",
       description: "A new community policing initiative has been launched in Paris.",
       photo: "initiative.jpg",
+      createdAt: "2025-09-11",
+    },
+  ];
+
+  const defaultHeadlineNews = [
+    {
+      id: 1,
+      title: "Major Crime Reduction in City Center",
+      description: "Crime rates have dropped by 30% in the city center following new security measures.",
+      image: "headline1.jpg",
+      createdAt: "2025-09-11",
+    },
+  ];
+
+  const defaultBannerNews = [
+    {
+      id: 1,
+      title: "Emergency Alert System Upgraded",
+      description: "New emergency alert system now provides real-time notifications to citizens.",
+      image: "banner1.jpg",
       createdAt: "2025-09-11",
     },
   ];
@@ -117,6 +139,8 @@ export default function AdminDashboard() {
   const [stations, setStations] = useState(defaultStations);
   const [complaints, setComplaints] = useState(defaultComplaints);
   const [news, setNews] = useState(defaultNews);
+  const [headlineNews, setHeadlineNews] = useState(defaultHeadlineNews);
+  const [bannerNews, setBannerNews] = useState(defaultBannerNews);
   const [alerts, setAlerts] = useState(defaultAlerts);
 
   // Fetch stations from backend
@@ -159,6 +183,16 @@ export default function AdminDashboard() {
         setNews(JSON.parse(savedNews));
       }
 
+      const savedHeadlineNews = localStorage.getItem("headlineNews");
+      if (savedHeadlineNews) {
+        setHeadlineNews(JSON.parse(savedHeadlineNews));
+      }
+
+      const savedBannerNews = localStorage.getItem("bannerNews");
+      if (savedBannerNews) {
+        setBannerNews(JSON.parse(savedBannerNews));
+      }
+
       const savedAlerts = localStorage.getItem("alerts");
       if (savedAlerts) {
         setAlerts(JSON.parse(savedAlerts));
@@ -188,6 +222,18 @@ export default function AdminDashboard() {
       localStorage.setItem("news", JSON.stringify(news));
     }
   }, [news]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("headlineNews", JSON.stringify(headlineNews));
+    }
+  }, [headlineNews]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("bannerNews", JSON.stringify(bannerNews));
+    }
+  }, [bannerNews]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -235,6 +281,22 @@ export default function AdminDashboard() {
     title: "",
     description: "",
     photo: "",
+    createdAt: "",
+  });
+
+  const [newHeadlineNews, setNewHeadlineNews] = useState({
+    id: null,
+    title: "",
+    description: "",
+    image: "",
+    createdAt: "",
+  });
+
+  const [newBannerNews, setNewBannerNews] = useState({
+    id: null,
+    title: "",
+    description: "",
+    image: "",
     createdAt: "",
   });
 
@@ -387,6 +449,56 @@ export default function AdminDashboard() {
     setShowNewsModal(false);
   };
 
+  // Save Headline News
+  const handleSaveHeadlineNews = () => {
+    if (!newHeadlineNews.title || !newHeadlineNews.description) {
+      alert("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+
+    const now = new Date();
+    const createdAt = now.toISOString().split("T")[0];
+
+    if (newHeadlineNews.id) {
+      setHeadlineNews(headlineNews.map((n) => (n.id === newHeadlineNews.id ? newHeadlineNews : n)));
+    } else {
+      setHeadlineNews([...headlineNews, { ...newHeadlineNews, id: Date.now(), createdAt }]);
+    }
+    setNewHeadlineNews({
+      id: null,
+      title: "",
+      description: "",
+      image: "",
+      createdAt: "",
+    });
+    setShowHeadlineNewsModal(false);
+  };
+
+  // Save Banner News
+  const handleSaveBannerNews = () => {
+    if (!newBannerNews.title || !newBannerNews.description) {
+      alert("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+
+    const now = new Date();
+    const createdAt = now.toISOString().split("T")[0];
+
+    if (newBannerNews.id) {
+      setBannerNews(bannerNews.map((n) => (n.id === newBannerNews.id ? newBannerNews : n)));
+    } else {
+      setBannerNews([...bannerNews, { ...newBannerNews, id: Date.now(), createdAt }]);
+    }
+    setNewBannerNews({
+      id: null,
+      title: "",
+      description: "",
+      image: "",
+      createdAt: "",
+    });
+    setShowBannerNewsModal(false);
+  };
+
   // Save Alert
   const handleSaveAlert = () => {
     if (!newAlert.title || !newAlert.location || !newAlert.crime) {
@@ -458,6 +570,18 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteHeadlineNews = (id) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette nouvelle principale?")) {
+      setHeadlineNews(headlineNews.filter((n) => n.id !== id));
+    }
+  };
+
+  const handleDeleteBannerNews = (id) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette bannière?")) {
+      setBannerNews(bannerNews.filter((n) => n.id !== id));
+    }
+  };
+
   const handleDeleteAlert = (id) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette alerte?")) {
       setAlerts(alerts.filter((a) => a.id !== id));
@@ -517,6 +641,26 @@ export default function AdminDashboard() {
     });
   };
 
+  const resetHeadlineNewsForm = () => {
+    setNewHeadlineNews({
+      id: null,
+      title: "",
+      description: "",
+      image: "",
+      createdAt: "",
+    });
+  };
+
+  const resetBannerNewsForm = () => {
+    setNewBannerNews({
+      id: null,
+      title: "",
+      description: "",
+      image: "",
+      createdAt: "",
+    });
+  };
+
   const resetAlertForm = () => {
     setNewAlert({
       id: null,
@@ -572,7 +716,23 @@ export default function AdminDashboard() {
               activeSection === "news" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <Newspaper size={18} /> News
+            <Newspaper size={18} /> Regular News
+          </button>
+          <button
+            onClick={() => setActiveSection("headlineNews")}
+            className={`flex items-center gap-2 ${
+              activeSection === "headlineNews" ? "text-blue-300" : "hover:text-blue-300"
+            }`}
+          >
+            <Newspaper size={18} /> Headline News
+          </button>
+          <button
+            onClick={() => setActiveSection("bannerNews")}
+            className={`flex items-center gap-2 ${
+              activeSection === "bannerNews" ? "text-blue-300" : "hover:text-blue-300"
+            }`}
+          >
+            <Newspaper size={18} /> Banner News
           </button>
           <button
             onClick={() => setActiveSection("alerts")}
@@ -603,8 +763,16 @@ export default function AdminDashboard() {
                 <p className="text-2xl font-bold">{complaints.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total News</h3>
+                <h3 className="text-gray-500">Regular News</h3>
                 <p className="text-2xl font-bold">{news.length}</p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-md">
+                <h3 className="text-gray-500">Headline News</h3>
+                <p className="text-2xl font-bold">{headlineNews.length}</p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-md">
+                <h3 className="text-gray-500">Banner News</h3>
+                <p className="text-2xl font-bold">{bannerNews.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
                 <h3 className="text-gray-500">Total Urgent Alerts</h3>
@@ -787,7 +955,7 @@ export default function AdminDashboard() {
         {activeSection === "news" && (
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">News</h2>
+              <h2 className="text-xl font-bold">Regular News</h2>
               <button
                 onClick={() => {
                   resetNewsForm();
@@ -829,6 +997,120 @@ export default function AdminDashboard() {
                         <button
                           className="text-red-600"
                           onClick={() => handleDeleteNews(n.id)}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {activeSection === "headlineNews" && (
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Headline News</h2>
+              <button
+                onClick={() => {
+                  resetHeadlineNewsForm();
+                  setShowHeadlineNewsModal(true);
+                }}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                <Plus size={16} /> Ajouter
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="p-3 text-left">Titre</th>
+                    <th className="p-3 text-left">Description</th>
+                    <th className="p-3 text-left">Image</th>
+                    <th className="p-3 text-left">Date de Création</th>
+                    <th className="p-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {headlineNews.map((n) => (
+                    <tr key={n.id} className="border-b">
+                      <td className="p-3">{n.title}</td>
+                      <td className="p-3">{n.description}</td>
+                      <td className="p-3">{n.image}</td>
+                      <td className="p-3">{n.createdAt}</td>
+                      <td className="p-3 flex gap-2">
+                        <button
+                          className="text-blue-600"
+                          onClick={() => {
+                            setNewHeadlineNews(n);
+                            setShowHeadlineNewsModal(true);
+                          }}
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          className="text-red-600"
+                          onClick={() => handleDeleteHeadlineNews(n.id)}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {activeSection === "bannerNews" && (
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Banner News</h2>
+              <button
+                onClick={() => {
+                  resetBannerNewsForm();
+                  setShowBannerNewsModal(true);
+                }}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                <Plus size={16} /> Ajouter
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="p-3 text-left">Titre</th>
+                    <th className="p-3 text-left">Description</th>
+                    <th className="p-3 text-left">Image</th>
+                    <th className="p-3 text-left">Date de Création</th>
+                    <th className="p-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bannerNews.map((n) => (
+                    <tr key={n.id} className="border-b">
+                      <td className="p-3">{n.title}</td>
+                      <td className="p-3">{n.description}</td>
+                      <td className="p-3">{n.image}</td>
+                      <td className="p-3">{n.createdAt}</td>
+                      <td className="p-3 flex gap-2">
+                        <button
+                          className="text-blue-600"
+                          onClick={() => {
+                            setNewBannerNews(n);
+                            setShowBannerNewsModal(true);
+                          }}
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          className="text-red-600"
+                          onClick={() => handleDeleteBannerNews(n.id)}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -1369,6 +1651,160 @@ export default function AdminDashboard() {
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg"
                 >
                   {newNews.id ? "Modifier" : "Ajouter"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Headline News Modal */}
+        {showHeadlineNewsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">
+                  {newHeadlineNews.id ? "Modifier" : "Ajouter"} Headline News
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowHeadlineNewsModal(false);
+                    resetHeadlineNewsForm();
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Titre *</label>
+                  <input
+                    type="text"
+                    value={newHeadlineNews.title}
+                    onChange={(e) =>
+                      setNewHeadlineNews({ ...newHeadlineNews, title: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Titre de la nouvelle principale"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description *</label>
+                  <textarea
+                    value={newHeadlineNews.description}
+                    onChange={(e) =>
+                      setNewHeadlineNews({ ...newHeadlineNews, description: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Description de la nouvelle principale"
+                    rows="4"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Image</label>
+                  <input
+                    type="text"
+                    value={newHeadlineNews.image}
+                    onChange={(e) =>
+                      setNewHeadlineNews({ ...newHeadlineNews, image: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="headline.jpg"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={() => {
+                    setShowHeadlineNewsModal(false);
+                    resetHeadlineNewsForm();
+                  }}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSaveHeadlineNews}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  {newHeadlineNews.id ? "Modifier" : "Ajouter"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Banner News Modal */}
+        {showBannerNewsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">
+                  {newBannerNews.id ? "Modifier" : "Ajouter"} Banner News
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowBannerNewsModal(false);
+                    resetBannerNewsForm();
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Titre *</label>
+                  <input
+                    type="text"
+                    value={newBannerNews.title}
+                    onChange={(e) =>
+                      setNewBannerNews({ ...newBannerNews, title: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Titre de la bannière"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description *</label>
+                  <textarea
+                    value={newBannerNews.description}
+                    onChange={(e) =>
+                      setNewBannerNews({ ...newBannerNews, description: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Description de la bannière"
+                    rows="4"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Image</label>
+                  <input
+                    type="text"
+                    value={newBannerNews.image}
+                    onChange={(e) =>
+                      setNewBannerNews({ ...newBannerNews, image: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="banner.jpg"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={() => {
+                    setShowBannerNewsModal(false);
+                    resetBannerNewsForm();
+                  }}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSaveBannerNews}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  {newBannerNews.id ? "Modifier" : "Ajouter"}
                 </button>
               </div>
             </div>
