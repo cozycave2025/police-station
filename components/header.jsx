@@ -30,27 +30,7 @@ export default function Header() {
           <div className="flex items-center gap-5">
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-blue-600 transition"
-                aria-label="Home page"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="text-gray-600 hover:text-blue-600 transition"
-                aria-label="About page"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="text-gray-600 hover:text-blue-600 transition"
-                aria-label="Contact page"
-              >
-                Contact
-              </Link>
+              
             </nav>
 
             {/* Mobile Menu Button */}
@@ -98,27 +78,7 @@ export default function Header() {
         {isOpen && (
           <div className="md:hidden bg-white border-t border-gray-200">
             <nav className="flex flex-col p-4 gap-4">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-blue-600 transition"
-                aria-label="Home page"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="text-gray-600 hover:text-blue-600 transition"
-                aria-label="About page"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="text-gray-600 hover:text-blue-600 transition"
-                aria-label="Contact page"
-              >
-                Contact
-              </Link>
+            
               <Link
                 href="/register"
                 aria-label="Register for an account"

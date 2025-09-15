@@ -1,14 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, User, FileText, Shield, Archive } from "lucide-react";
+import { Plus, Edit, Trash2, User, FileText, Shield, Archive, LogOut } from "lucide-react";
+import Image from "next/image";
 
 export default function PoliceDashboard() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [complaintsLoading, setComplaintsLoading] = useState(false);
+
   useEffect(() => {
     const loggedIn = localStorage.getItem("commissioners");
     if (!loggedIn) {
       window.location.href = "/Commissaires-dashboard/login";
     }
+    setIsLoading(false);
   }, []);
 
   // Default data
@@ -30,9 +35,10 @@ export default function PoliceDashboard() {
 
   // Fetch complaints from database based on commissioner's station
   const fetchStationComplaints = async () => {
+    setComplaintsLoading(true);
     try {
       const commissionerUsername = JSON.parse(localStorage.getItem("commissioners"));
-      console.log(commissionerUsername.username);
+      console.log(commissionerUsername[0].username);
       if (!commissionerUsername) return;
 
       const response = await fetch("/api/getcomplaints", {
@@ -41,7 +47,7 @@ export default function PoliceDashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userIdentifier: commissionerUsername.username,
+          userIdentifier: commissionerUsername[0].username,
           userType: "commissioner"
         }),
       });
@@ -53,6 +59,8 @@ export default function PoliceDashboard() {
       }
     } catch (error) {
       console.error("Error fetching station complaints:", error);
+    } finally {
+      setComplaintsLoading(false);
     }
   };
 
@@ -92,7 +100,7 @@ export default function PoliceDashboard() {
       const res = await fetch("/api/police_agent/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({...newOfficer, commissionerUsername: commissionerUsername.username}),
+        body: JSON.stringify({...newOfficer, commissionerUsername: commissionerUsername[0].username}),
       });
   
       const data = await res.json();
@@ -178,31 +186,115 @@ export default function PoliceDashboard() {
     setEditingOfficer(null);
     setNewOfficer({ name: "", rank: "", badge: "", username: "", password: "" });
   };
-  // Complaint functions
+  // Complaint functions - Database integration
+  const updateComplaintStatus = async (id, newStatus) => {
+    try {
+      const response = await fetch('/api/complaints/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: id,
+          status: newStatus
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh complaints after update
+        fetchStationComplaints();
+        alert(`Complaint status updated to ${newStatus}`);
+      } else {
+        const error = await response.json();
+        alert('Error updating complaint: ' + error.message);
+      }
+    } catch (error) {
+      console.error('Error updating complaint:', error);
+      alert('Error updating complaint');
+    }
+  };
+
+  const deleteComplaint = async (id) => {
+    if (!confirm('Are you sure you want to delete this complaint?')) return;
+    
+    try {
+      const response = await fetch('/api/complaints/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: id }),
+      });
+
+      if (response.ok) {
+        // Refresh complaints after deletion
+        fetchStationComplaints();
+        alert('Complaint deleted successfully');
+      } else {
+        const error = await response.json();
+        alert('Error deleting complaint: ' + error.message);
+      }
+    } catch (error) {
+      console.error('Error deleting complaint:', error);
+      alert('Error deleting complaint');
+    }
+  };
+
   const moveToInvestigation = (id) => {
-    const updated = complaints.map((c) =>
-      c.id === id ? { ...c, status: "Under Investigation" } : c
-    );
-    saveComplaints(updated);
+    updateComplaintStatus(id, "Under Investigation");
   };
 
   const closeCase = (id) => {
-    const updated = complaints.map((c) =>
-      c.id === id ? { ...c, status: "Closed" } : c
-    );
-    saveComplaints(updated);
+    updateComplaintStatus(id, "Closed");
   };
 
   const deleteClosedCase = (id) => {
-    const updated = complaints.filter((c) => c.id !== id);
-    saveComplaints(updated);
+    deleteComplaint(id);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("commissioners");
+    window.location.href = "/Commissaires-dashboard/login";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-lg">Loading Commissaires Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const commissionerData = JSON.parse(localStorage.getItem("commissioners") || '[{}]')[0];
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-blue-800 text-white p-6">
-        <h1 className="text-2xl font-bold mb-6">Commissaires Dashboard</h1>
+      <aside className="w-full md:w-64 bg-blue-800 text-white p-6 flex flex-col">
+        <div className="flex items-center mb-6">
+          <Image
+            src="/logo.jpeg"
+            alt="E-OPROGEM Logo"
+            width={40}
+            height={40}
+            className="rounded-full mr-3"
+          />
+          <h1 className="text-2xl font-bold">Commissaires Dashboard</h1>
+        </div>
+        
+        <div className="flex items-center mb-6 p-3 bg-blue-700 rounded-lg">
+          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+            <User size={20} />
+          </div>
+          <div>
+            <p className="text-sm font-medium">{commissionerData.name || 'Commissaire'}</p>
+            <p className="text-xs text-blue-300">Commissaire de Police</p>
+            <p className="text-xs text-blue-200">{commissionerData.policeStation || 'Station'}</p>
+          </div>
+        </div>
         <ul className="space-y-4">
           <li
             className={`flex items-center gap-2 cursor-pointer ${activeTab === "officers" ? "font-bold" : ""}`}
@@ -230,6 +322,17 @@ export default function PoliceDashboard() {
             <Archive size={18} /> Case Closed
           </li>
         </ul>
+        
+        {/* Logout Button */}
+        <div className="mt-auto pt-4 border-t border-blue-700">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full p-3 text-red-300 hover:text-red-200 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            <LogOut size={18} />
+            Déconnexion
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}

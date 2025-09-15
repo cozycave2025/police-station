@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -15,7 +14,11 @@ import {
   X,
   Eye,
   EyeOff,
+  MessageSquare,
+  LogOut,
 } from "lucide-react";
+import { UrgentAlerts } from "../../components/UrgentAlerts";
+import Image from "next/image";
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -24,10 +27,13 @@ export default function AdminDashboard() {
   const [showStationModal, setShowStationModal] = useState(false);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
-  const [showHeadlineNewsModal, setShowHeadlineNewsModal] = useState(false);
-  const [showBannerNewsModal, setShowBannerNewsModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [showAwarenessModal, setShowAwarenessModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [hasMoreComplaints, setHasMoreComplaints] = useState(false);
+  const [complaintsPage, setComplaintsPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
 
   // Commissioners data structure
   const defaultCommissioners = [
@@ -92,36 +98,11 @@ export default function AdminDashboard() {
     },
   ];
 
-  // News data structures
-  const defaultNews = [
-    {
-      id: 1,
-      title: "New Police Initiative Launched",
-      description: "A new community policing initiative has been launched in Paris.",
-      photo: "initiative.jpg",
-      createdAt: "2025-09-11",
-    },
-  ];
+  // Unified news data structure
+  const [allNews, setAllNews] = useState([]);
 
-  const defaultHeadlineNews = [
-    {
-      id: 1,
-      title: "Major Crime Reduction in City Center",
-      description: "Crime rates have dropped by 30% in the city center following new security measures.",
-      image: "headline1.jpg",
-      createdAt: "2025-09-11",
-    },
-  ];
-
-  const defaultBannerNews = [
-    {
-      id: 1,
-      title: "Emergency Alert System Upgraded",
-      description: "New emergency alert system now provides real-time notifications to citizens.",
-      image: "banner1.jpg",
-      createdAt: "2025-09-11",
-    },
-  ];
+  // Awareness messages data structure
+  const [awarenessMessages, setAwarenessMessages] = useState([]);
 
   // Urgent Alerts data structure
   const defaultAlerts = [
@@ -138,9 +119,6 @@ export default function AdminDashboard() {
   const [commissioners, setCommissioners] = useState(defaultCommissioners);
   const [stations, setStations] = useState(defaultStations);
   const [complaints, setComplaints] = useState(defaultComplaints);
-  const [news, setNews] = useState(defaultNews);
-  const [headlineNews, setHeadlineNews] = useState(defaultHeadlineNews);
-  const [bannerNews, setBannerNews] = useState(defaultBannerNews);
   const [alerts, setAlerts] = useState(defaultAlerts);
 
   // Fetch stations from backend
@@ -158,53 +136,138 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch news from backend
+  const fetchNews = async () => {
+    try {
+      const response = await fetch('/api/news');
+      if (response.ok) {
+        const data = await response.json();
+        setAllNews(data.news || []);
+      } else {
+        console.error('Failed to fetch news');
+      }
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
+
+  // Fetch awareness messages from backend
+  const fetchAwarenessMessages = async () => {
+    try {
+      const response = await fetch('/api/awareness');
+      if (response.ok) {
+        const data = await response.json();
+        setAwarenessMessages(data.awareness || []);
+      } else {
+        console.error('Failed to fetch awareness messages');
+      }
+    } catch (error) {
+      console.error('Error fetching awareness messages:', error);
+    }
+  };
+
+  // Fetch alerts from backend
+  const fetchAlerts = async () => {
+    try {
+      const response = await fetch('/api/alert');
+      if (response.ok) {
+        const data = await response.json();
+        setAlerts(data.alerts || []);
+      } else {
+        console.error('Failed to fetch alerts');
+      }
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+    }
+  };
+
+  const fetchCommissioners = async () => {
+    try {
+      const response = await fetch('/api/Commissaires');
+      if (response.ok) {
+        const data = await response.json();
+        setCommissioners(data.commissioners || []);
+      } else {
+        console.error('Failed to fetch commissioners');
+        setCommissioners(defaultCommissioners);
+      }
+    } catch (error) {
+      console.error('Error fetching commissioners:', error);
+      setCommissioners(defaultCommissioners);
+    }
+  };
+
+  const fetchComplaints = async (page = 1, limit = 5) => {
+    try {
+      const response = await fetch(`/api/getcomplaints?page=${page}&limit=${limit}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (page === 1) {
+          setComplaints(data.complaints || []);
+        } else {
+          setComplaints(prev => [...prev, ...(data.complaints || [])]);
+        }
+        setHasMoreComplaints(data.hasMore || false);
+      } else {
+        console.error('Failed to fetch complaints');
+      }
+    } catch (error) {
+      console.error('Error fetching complaints:', error);
+    }
+  };
+
   // Load data from localStorage and handle authentication
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setName(localStorage.getItem("adminname") || "");
-      const loggedIn = localStorage.getItem("isAdminLoggedIn");
-      if (!loggedIn) {
-        window.location.href = "/admin/login";
-      }
+    const initializeAdmin = async () => {
+      if (typeof window !== "undefined") {
+        setName(localStorage.getItem("adminname") || "");
+        const loggedIn = localStorage.getItem("isAdminLoggedIn");
+        if (!loggedIn) {
+          window.location.href = "/admin/login";
+          return;
+        }
 
-      // Load data from localStorage for other sections
-      const savedCommissioners = localStorage.getItem("commissioners");
-      if (savedCommissioners) {
-        setCommissioners(JSON.parse(savedCommissioners));
-      }
+        setDataLoading(true);
 
-      const savedComplaints = localStorage.getItem("complaints");
-      if (savedComplaints) {
-        setComplaints(JSON.parse(savedComplaints));
-      }
+        const savedAlerts = localStorage.getItem("alerts");
+        if (savedAlerts) {
+          try {
+            const parsedAlerts = JSON.parse(savedAlerts);
+            if (Array.isArray(parsedAlerts)) {
+              setAlerts(parsedAlerts);
+            } else {
+              setAlerts(defaultAlerts);
+            }
+          } catch (error) {
+            console.error('Error parsing alerts from localStorage:', error);
+            setAlerts(defaultAlerts);
+          }
+        }
 
-      const savedNews = localStorage.getItem("news");
-      if (savedNews) {
-        setNews(JSON.parse(savedNews));
+        // Fetch data from backend
+        try {
+          await Promise.all([
+            fetchStations(),
+            fetchNews(),
+            fetchAwarenessMessages(),
+            fetchAlerts(),
+            fetchCommissioners(),
+            fetchComplaints(1, 5)
+          ]);
+        } catch (error) {
+          console.error('Error loading data:', error);
+        } finally {
+          setDataLoading(false);
+          setIsLoading(false);
+        }
       }
+    };
 
-      const savedHeadlineNews = localStorage.getItem("headlineNews");
-      if (savedHeadlineNews) {
-        setHeadlineNews(JSON.parse(savedHeadlineNews));
-      }
-
-      const savedBannerNews = localStorage.getItem("bannerNews");
-      if (savedBannerNews) {
-        setBannerNews(JSON.parse(savedBannerNews));
-      }
-
-      const savedAlerts = localStorage.getItem("alerts");
-      if (savedAlerts) {
-        setAlerts(JSON.parse(savedAlerts));
-      }
-
-      // Fetch stations from backend
-      fetchStations();
-    }
+    initializeAdmin();
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && Array.isArray(commissioners)) {
       localStorage.setItem("commissioners", JSON.stringify(commissioners));
     }
   }, [commissioners]);
@@ -212,31 +275,15 @@ export default function AdminDashboard() {
   // Remove localStorage saving for stations since we're using backend API
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && Array.isArray(complaints)) {
       localStorage.setItem("complaints", JSON.stringify(complaints));
     }
   }, [complaints]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("news", JSON.stringify(news));
-    }
-  }, [news]);
+  // News is now managed via API, no localStorage needed
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("headlineNews", JSON.stringify(headlineNews));
-    }
-  }, [headlineNews]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("bannerNews", JSON.stringify(bannerNews));
-    }
-  }, [bannerNews]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && Array.isArray(alerts)) {
       localStorage.setItem("alerts", JSON.stringify(alerts));
     }
   }, [alerts]);
@@ -280,24 +327,9 @@ export default function AdminDashboard() {
     id: null,
     title: "",
     description: "",
-    photo: "",
-    createdAt: "",
-  });
-
-  const [newHeadlineNews, setNewHeadlineNews] = useState({
-    id: null,
-    title: "",
-    description: "",
     image: "",
-    createdAt: "",
-  });
-
-  const [newBannerNews, setNewBannerNews] = useState({
-    id: null,
-    title: "",
-    description: "",
-    image: "",
-    createdAt: "",
+    category: "",
+    type: "regular",
   });
 
   const [newAlert, setNewAlert] = useState({
@@ -305,37 +337,65 @@ export default function AdminDashboard() {
     title: "",
     location: "",
     crime: "",
+    description: "",
     createdAt: "",
   });
 
+  const [newAwareness, setNewAwareness] = useState({
+    id: null,
+    title: "",
+    description: "",
+  });
+
   // Save Commissioner
-  const handleSaveCommissioner = () => {
+  const handleSaveCommissioner = async () => {
     if (!newCommissioner.name || !newCommissioner.username || !newCommissioner.badgeId) {
       alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    if (newCommissioner.id) {
-      setCommissioners(
-        commissioners.map((c) => (c.id === newCommissioner.id ? newCommissioner : c))
-      );
-    } else {
-      setCommissioners([...commissioners, { ...newCommissioner, id: Date.now() }]);
+    try {
+      const method = newCommissioner._id ? 'PUT' : 'POST';
+      const body = newCommissioner._id 
+        ? { id: newCommissioner._id, ...newCommissioner }
+        : newCommissioner;
+
+      const response = await fetch('/api/Commissaires', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Refresh commissioners list from database
+        fetchCommissioners();
+        
+        setNewCommissioner({
+          id: null,
+          name: "",
+          username: "",
+          password: "",
+          badgeId: "",
+          city: "",
+          policeStation: "",
+          region: "",
+          phone: "",
+          email: "",
+        });
+        setShowCommissionerModal(false);
+        setShowPassword(false);
+        alert("Commissioner saved successfully!");
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error('Error saving commissioner:', error);
+      alert("Error saving commissioner");
     }
-    setNewCommissioner({
-      id: null,
-      name: "",
-      username: "",
-      password: "",
-      badgeId: "",
-      city: "",
-      policeStation: "",
-      region: "",
-      phone: "",
-      email: "",
-    });
-    setShowCommissionerModal(false);
-    setShowPassword(false);
   };
 
   // Save Station
@@ -425,109 +485,161 @@ export default function AdminDashboard() {
   };
 
   // Save News
-  const handleSaveNews = () => {
+  const handleSaveNews = async () => {
     if (!newNews.title || !newNews.description) {
       alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    const now = new Date();
-    const createdAt = now.toISOString().split("T")[0];
+    try {
+      const method = newNews.id ? 'PUT' : 'POST';
+      const body = newNews.id 
+        ? { id: newNews.id, ...newNews }
+        : { title: newNews.title, description: newNews.description, image: newNews.image, category: newNews.category, type: newNews.type };
 
-    if (newNews.id) {
-      setNews(news.map((n) => (n.id === newNews.id ? newNews : n)));
-    } else {
-      setNews([...news, { ...newNews, id: Date.now(), createdAt }]);
+      const response = await fetch('/api/news', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(newNews.id ? "News modifiée avec succès!" : "News ajoutée avec succès!");
+        // Refresh the news list
+        await fetchNews();
+        setNewNews({
+          id: null,
+          title: "",
+          description: "",
+          image: "",
+          category: "",
+          type: "regular",
+        });
+        setShowNewsModal(false);
+      } else {
+        alert("Erreur: " + result.error);
+      }
+    } catch (error) {
+      console.error('Error saving news:', error);
+      alert("Erreur lors de la sauvegarde");
     }
-    setNewNews({
-      id: null,
-      title: "",
-      description: "",
-      photo: "",
-      createdAt: "",
-    });
-    setShowNewsModal(false);
-  };
-
-  // Save Headline News
-  const handleSaveHeadlineNews = () => {
-    if (!newHeadlineNews.title || !newHeadlineNews.description) {
-      alert("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-
-    const now = new Date();
-    const createdAt = now.toISOString().split("T")[0];
-
-    if (newHeadlineNews.id) {
-      setHeadlineNews(headlineNews.map((n) => (n.id === newHeadlineNews.id ? newHeadlineNews : n)));
-    } else {
-      setHeadlineNews([...headlineNews, { ...newHeadlineNews, id: Date.now(), createdAt }]);
-    }
-    setNewHeadlineNews({
-      id: null,
-      title: "",
-      description: "",
-      image: "",
-      createdAt: "",
-    });
-    setShowHeadlineNewsModal(false);
-  };
-
-  // Save Banner News
-  const handleSaveBannerNews = () => {
-    if (!newBannerNews.title || !newBannerNews.description) {
-      alert("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-
-    const now = new Date();
-    const createdAt = now.toISOString().split("T")[0];
-
-    if (newBannerNews.id) {
-      setBannerNews(bannerNews.map((n) => (n.id === newBannerNews.id ? newBannerNews : n)));
-    } else {
-      setBannerNews([...bannerNews, { ...newBannerNews, id: Date.now(), createdAt }]);
-    }
-    setNewBannerNews({
-      id: null,
-      title: "",
-      description: "",
-      image: "",
-      createdAt: "",
-    });
-    setShowBannerNewsModal(false);
   };
 
   // Save Alert
-  const handleSaveAlert = () => {
-    if (!newAlert.title || !newAlert.location || !newAlert.crime) {
+  const handleSaveAlert = async () => {
+    if (!newAlert.title || !newAlert.location || !newAlert.crime || !newAlert.description) {
       alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    const now = new Date();
-    const createdAt = now.toISOString().split("T")[0];
+    try {
+      const method = newAlert._id ? 'PUT' : 'POST';
+      const body = newAlert._id 
+        ? { id: newAlert._id, ...newAlert }
+        : { title: newAlert.title, location: newAlert.location, crime: newAlert.crime, description: newAlert.description };
 
-    if (newAlert.id) {
-      setAlerts(alerts.map((a) => (a.id === newAlert.id ? newAlert : a)));
-    } else {
-      setAlerts([...alerts, { ...newAlert, id: Date.now(), createdAt }]);
+      const response = await fetch('/api/alert', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(newAlert._id ? "Alerte urgente modifiée avec succès!" : "Alerte urgente ajoutée avec succès!");
+        // Refresh the alerts list
+        await fetchAlerts();
+        setNewAlert({
+          id: null,
+          title: "",
+          location: "",
+          crime: "",
+          description: "",
+        });
+        setShowAlertModal(false);
+      } else {
+        alert("Erreur: " + result.message);
+      }
+    } catch (error) {
+      console.error('Error saving alert:', error);
+      alert("Erreur lors de la sauvegarde de l'alerte");
     }
-    setNewAlert({
-      id: null,
-      title: "",
-      location: "",
-      crime: "",
-      createdAt: "",
-    });
-    setShowAlertModal(false);
+  };
+
+  // Save Awareness Message
+  const handleSaveAwareness = async () => {
+    if (!newAwareness.title || !newAwareness.description) {
+      alert("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+
+    try {
+      const method = newAwareness._id ? 'PUT' : 'POST';
+      const body = newAwareness._id 
+        ? { id: newAwareness._id, ...newAwareness }
+        : { title: newAwareness.title, description: newAwareness.description };
+
+      const response = await fetch('/api/awareness', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(newAwareness._id ? "Message de sensibilisation modifié avec succès!" : "Message de sensibilisation ajouté avec succès!");
+        // Refresh the awareness messages list
+        await fetchAwarenessMessages();
+        setNewAwareness({
+          id: null,
+          title: "",
+          description: "",
+        });
+        setShowAwarenessModal(false);
+      } else {
+        alert("Erreur: " + result.message);
+      }
+    } catch (error) {
+      console.error('Error saving awareness message:', error);
+      alert("Erreur lors de la sauvegarde");
+    }
   };
 
   // Delete
-  const handleDeleteCommissioner = (id) => {
+  const handleDeleteCommissioner = async (id) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce commissaire?")) {
-      setCommissioners(commissioners.filter((c) => c.id !== id));
+      try {
+        const response = await fetch('/api/Commissaires', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          // Refresh commissioners list from database
+          fetchCommissioners();
+          alert("Commissioner deleted successfully!");
+        } else {
+          alert("Error: " + result.message);
+        }
+      } catch (error) {
+        console.error('Error deleting commissioner:', error);
+        alert("Error deleting commissioner");
+      }
     }
   };
 
@@ -564,27 +676,84 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteNews = (id) => {
+  const handleDeleteNews = async (id) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette nouvelle?")) {
-      setNews(news.filter((n) => n.id !== id));
+      try {
+        const response = await fetch('/api/news', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("News supprimée avec succès!");
+          // Refresh the news list
+          await fetchNews();
+        } else {
+          alert("Erreur: " + result.error);
+        }
+      } catch (error) {
+        console.error('Error deleting news:', error);
+        alert("Erreur lors de la suppression");
+      }
     }
   };
 
-  const handleDeleteHeadlineNews = (id) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette nouvelle principale?")) {
-      setHeadlineNews(headlineNews.filter((n) => n.id !== id));
+  const handleDeleteAwareness = async (id) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce message de sensibilisation?")) {
+      try {
+        const response = await fetch('/api/awareness', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("Message de sensibilisation supprimé avec succès!");
+          // Refresh the awareness messages list
+          await fetchAwarenessMessages();
+        } else {
+          alert("Erreur: " + result.message);
+        }
+      } catch (error) {
+        console.error('Error deleting awareness message:', error);
+        alert("Erreur lors de la suppression");
+      }
     }
   };
 
-  const handleDeleteBannerNews = (id) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette bannière?")) {
-      setBannerNews(bannerNews.filter((n) => n.id !== id));
-    }
-  };
-
-  const handleDeleteAlert = (id) => {
+  const handleDeleteAlert = async (id) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette alerte?")) {
-      setAlerts(alerts.filter((a) => a.id !== id));
+      try {
+        const response = await fetch('/api/alert', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("Alerte urgente supprimée avec succès!");
+          // Refresh the alerts list
+          await fetchAlerts();
+        } else {
+          alert("Erreur: " + result.message);
+        }
+      } catch (error) {
+        console.error('Error deleting alert:', error);
+        alert("Erreur lors de la suppression");
+      }
     }
   };
 
@@ -636,28 +805,9 @@ export default function AdminDashboard() {
       id: null,
       title: "",
       description: "",
-      photo: "",
-      createdAt: "",
-    });
-  };
-
-  const resetHeadlineNewsForm = () => {
-    setNewHeadlineNews({
-      id: null,
-      title: "",
-      description: "",
       image: "",
-      createdAt: "",
-    });
-  };
-
-  const resetBannerNewsForm = () => {
-    setNewBannerNews({
-      id: null,
-      title: "",
-      description: "",
-      image: "",
-      createdAt: "",
+      category: "",
+      type: "regular",
     });
   };
 
@@ -671,12 +821,54 @@ export default function AdminDashboard() {
     });
   };
 
+  const resetAwarenessForm = () => {
+    setNewAwareness({
+      id: null,
+      title: "",
+      description: "",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-lg">Loading Admin Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("adminname");
+    window.location.href = "/admin/login";
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-blue-900 text-white p-6 flex flex-col">
-        <h1 className="text-2xl font-bold mb-8">E-OPROGEM</h1>
-        <p className="text-lg font-semibold mb-4">{name}</p>
+        <div className="flex items-center mb-8">
+          <Image
+            src="/logo.jpeg"
+            alt="E-OPROGEM Logo"
+            width={40}
+            height={40}
+            className="rounded-full mr-3"
+          />
+          <h1 className="text-2xl font-bold">E-OPROGEM</h1>
+        </div>
+        <div className="flex items-center mb-6 p-3 bg-blue-800 rounded-lg">
+          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-sm font-medium">{name}</p>
+            <p className="text-xs text-blue-300">Administrateur</p>
+          </div>
+        </div>
         <nav className="flex flex-col gap-4">
           <button
             onClick={() => setActiveSection("dashboard")}
@@ -716,23 +908,15 @@ export default function AdminDashboard() {
               activeSection === "news" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <Newspaper size={18} /> Regular News
+            <Newspaper size={18} /> News Management
           </button>
           <button
-            onClick={() => setActiveSection("headlineNews")}
+            onClick={() => setActiveSection("awareness")}
             className={`flex items-center gap-2 ${
-              activeSection === "headlineNews" ? "text-blue-300" : "hover:text-blue-300"
+              activeSection === "awareness" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <Newspaper size={18} /> Headline News
-          </button>
-          <button
-            onClick={() => setActiveSection("bannerNews")}
-            className={`flex items-center gap-2 ${
-              activeSection === "bannerNews" ? "text-blue-300" : "hover:text-blue-300"
-            }`}
-          >
-            <Newspaper size={18} /> Banner News
+            <MessageSquare size={18} /> Awareness Messages
           </button>
           <button
             onClick={() => setActiveSection("alerts")}
@@ -743,6 +927,17 @@ export default function AdminDashboard() {
             <AlertTriangle size={18} /> Urgent Alerts
           </button>
         </nav>
+        
+        {/* Logout Button */}
+        <div className="mt-auto pt-4 border-t border-blue-800">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full p-3 text-red-300 hover:text-red-200 hover:bg-blue-800 rounded-lg transition-colors"
+          >
+            <LogOut size={18} />
+            Déconnexion
+          </button>
+        </div>
       </aside>
 
       {/* Main */}
@@ -763,25 +958,25 @@ export default function AdminDashboard() {
                 <p className="text-2xl font-bold">{complaints.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Regular News</h3>
-                <p className="text-2xl font-bold">{news.length}</p>
+                <h3 className="text-gray-500">Total News</h3>
+                <p className="text-2xl font-bold">{allNews.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Headline News</h3>
-                <p className="text-2xl font-bold">{headlineNews.length}</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Banner News</h3>
-                <p className="text-2xl font-bold">{bannerNews.length}</p>
+                <h3 className="text-gray-500">Total Awareness Messages</h3>
+                <p className="text-2xl font-bold">{awarenessMessages.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
                 <h3 className="text-gray-500">Total Urgent Alerts</h3>
                 <p className="text-2xl font-bold">{alerts.length}</p>
               </div>
             </div>
+            
+            {/* UrgentAlerts Component */}
+            <div className="mb-8">
+              <UrgentAlerts />
+            </div>
           </>
         )}
-
         {activeSection === "commissioners" && (
           <section className="mb-10">
             <div className="flex justify-between items-center mb-4">
@@ -797,18 +992,21 @@ export default function AdminDashboard() {
                     <th className="p-3 text-left">Commissariat</th>
                     <th className="p-3 text-left">Ville</th>
                     <th className="p-3 text-left">Téléphone</th>
+                    <th className="p-3 text-left">Email</th>
                     <th className="p-3 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {commissioners.map((c) => (
-                    <tr key={c.id} className="border-b">
+                    <tr key={c._id || c.id} className="border-b">
                       <td className="p-3">{c.name}</td>
                       <td className="p-3">{c.username}</td>
                       <td className="p-3">{c.badgeId}</td>
-                      <td className="p-3">{c.policeStation}</td>
                       <td className="p-3">{c.city}</td>
+                      <td className="p-3">{c.policeStation}</td>
+                      <td className="p-3">{c.region}</td>
                       <td className="p-3">{c.phone}</td>
+                      <td className="p-3">{c.email}</td>
                       <td className="p-3 flex gap-2">
                         <button
                           className="text-blue-600"
@@ -821,7 +1019,7 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           className="text-red-600"
-                          onClick={() => handleDeleteCommissioner(c.id)}
+                          onClick={() => handleDeleteCommissioner(c._id || c.id)}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -920,13 +1118,13 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {complaints.map((c) => (
-                    <tr key={c.id} className="border-b">
-                      <td className="p-3">{c.title}</td>
+                    <tr key={c._id || c.id} className="border-b">
+                      <td className="p-3">{c.title || c.complaintType}</td>
                       <td className="p-3">{c.name}</td>
                       <td className="p-3">{c.cnic}</td>
                       <td className="p-3">{c.phone}</td>
-                      <td className="p-3">{c.status}</td>
-                      <td className="p-3">{c.submissionDate}</td>
+                      <td className="p-3">{c.status || 'Pending'}</td>
+                      <td className="p-3">{c.submissionDate || new Date(c.createdAt).toLocaleDateString()}</td>
                       <td className="p-3 flex gap-2">
                         <button
                           className="text-blue-600"
@@ -939,7 +1137,7 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           className="text-red-600"
-                          onClick={() => handleDeleteComplaint(c.id)}
+                          onClick={() => handleDeleteComplaint(c._id || c.id)}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -948,6 +1146,20 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              {hasMoreComplaints && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => {
+                      const nextPage = complaintsPage + 1;
+                      setComplaintsPage(nextPage);
+                      fetchComplaints(nextPage, 5);
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Load More Complaints
+                  </button>
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -955,7 +1167,7 @@ export default function AdminDashboard() {
         {activeSection === "news" && (
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Regular News</h2>
+              <h2 className="text-xl font-bold">News Management</h2>
               <button
                 onClick={() => {
                   resetNewsForm();
@@ -972,23 +1184,40 @@ export default function AdminDashboard() {
                   <tr>
                     <th className="p-3 text-left">Titre</th>
                     <th className="p-3 text-left">Description</th>
-                    <th className="p-3 text-left">Photo</th>
+                    <th className="p-3 text-left">Type</th>
+                    <th className="p-3 text-left">Catégorie</th>
                     <th className="p-3 text-left">Date de Création</th>
                     <th className="p-3 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {news.map((n) => (
+                  {allNews.map((n) => (
                     <tr key={n.id} className="border-b">
                       <td className="p-3">{n.title}</td>
-                      <td className="p-3">{n.description}</td>
-                      <td className="p-3">{n.photo}</td>
+                      <td className="p-3">{n.description?.substring(0, 50)}...</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          n.type === 'headline' ? 'bg-red-100 text-red-800' :
+                          n.type === 'banner' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {n.type}
+                        </span>
+                      </td>
+                      <td className="p-3">{n.category}</td>
                       <td className="p-3">{n.createdAt}</td>
                       <td className="p-3 flex gap-2">
                         <button
                           className="text-blue-600"
                           onClick={() => {
-                            setNewNews(n);
+                            setNewNews({
+                              id: n.id,
+                              title: n.title,
+                              description: n.description,
+                              image: n.image,
+                              category: n.category,
+                              type: n.type
+                            });
                             setShowNewsModal(true);
                           }}
                         >
@@ -1009,14 +1238,14 @@ export default function AdminDashboard() {
           </section>
         )}
 
-        {activeSection === "headlineNews" && (
+        {activeSection === "awareness" && (
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Headline News</h2>
+              <h2 className="text-xl font-bold">Messages de Sensibilisation</h2>
               <button
                 onClick={() => {
-                  resetHeadlineNewsForm();
-                  setShowHeadlineNewsModal(true);
+                  resetAwarenessForm();
+                  setShowAwarenessModal(true);
                 }}
                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
               >
@@ -1029,88 +1258,33 @@ export default function AdminDashboard() {
                   <tr>
                     <th className="p-3 text-left">Titre</th>
                     <th className="p-3 text-left">Description</th>
-                    <th className="p-3 text-left">Image</th>
                     <th className="p-3 text-left">Date de Création</th>
                     <th className="p-3 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {headlineNews.map((n) => (
-                    <tr key={n.id} className="border-b">
-                      <td className="p-3">{n.title}</td>
-                      <td className="p-3">{n.description}</td>
-                      <td className="p-3">{n.image}</td>
-                      <td className="p-3">{n.createdAt}</td>
+                  {awarenessMessages.map((awareness) => (
+                    <tr key={awareness._id || awareness.id} className="border-b">
+                      <td className="p-3">{awareness.title}</td>
+                      <td className="p-3">{awareness.description?.substring(0, 80)}...</td>
+                      <td className="p-3">{new Date(awareness.createdAt).toLocaleDateString()}</td>
                       <td className="p-3 flex gap-2">
                         <button
                           className="text-blue-600"
                           onClick={() => {
-                            setNewHeadlineNews(n);
-                            setShowHeadlineNewsModal(true);
+                            setNewAwareness({
+                              _id: awareness._id || awareness.id,
+                              title: awareness.title,
+                              description: awareness.description
+                            });
+                            setShowAwarenessModal(true);
                           }}
                         >
                           <Edit size={18} />
                         </button>
                         <button
                           className="text-red-600"
-                          onClick={() => handleDeleteHeadlineNews(n.id)}
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {activeSection === "bannerNews" && (
-          <section>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Banner News</h2>
-              <button
-                onClick={() => {
-                  resetBannerNewsForm();
-                  setShowBannerNewsModal(true);
-                }}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
-              >
-                <Plus size={16} /> Ajouter
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-                <thead className="bg-gray-200">
-                  <tr>
-                    <th className="p-3 text-left">Titre</th>
-                    <th className="p-3 text-left">Description</th>
-                    <th className="p-3 text-left">Image</th>
-                    <th className="p-3 text-left">Date de Création</th>
-                    <th className="p-3 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bannerNews.map((n) => (
-                    <tr key={n.id} className="border-b">
-                      <td className="p-3">{n.title}</td>
-                      <td className="p-3">{n.description}</td>
-                      <td className="p-3">{n.image}</td>
-                      <td className="p-3">{n.createdAt}</td>
-                      <td className="p-3 flex gap-2">
-                        <button
-                          className="text-blue-600"
-                          onClick={() => {
-                            setNewBannerNews(n);
-                            setShowBannerNewsModal(true);
-                          }}
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          className="text-red-600"
-                          onClick={() => handleDeleteBannerNews(n.id)}
+                          onClick={() => handleDeleteAwareness(awareness._id || awareness.id)}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -1598,7 +1772,7 @@ export default function AdminDashboard() {
                   <X size={24} />
                 </button>
               </div>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Titre *</label>
                   <input
@@ -1612,6 +1786,52 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1">Type *</label>
+                  <select
+                    value={newNews.type}
+                    onChange={(e) =>
+                      setNewNews({ ...newNews, type: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="regular">Regular</option>
+                    <option value="headline">Headline</option>
+                    <option value="banner">Banner</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Catégorie</label>
+                  <select
+                    value={newNews.category}
+                    onChange={(e) =>
+                      setNewNews({ ...newNews, category: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="">Sélectionner une catégorie</option>
+                    <option value="Culture">Culture</option>
+                    <option value="Infrastructure">Infrastructure</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Education">Education</option>
+                    <option value="Economy">Economy</option>
+                    <option value="Agriculture">Agriculture</option>
+                    <option value="Politics">Politics</option>
+                    <option value="General">General</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Image URL</label>
+                  <input
+                    type="text"
+                    value={newNews.image}
+                    onChange={(e) =>
+                      setNewNews({ ...newNews, image: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-1">Description *</label>
                   <textarea
                     value={newNews.description}
@@ -1621,18 +1841,6 @@ export default function AdminDashboard() {
                     className="w-full p-2 border rounded-lg"
                     placeholder="Description de la nouvelle"
                     rows="4"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Photo</label>
-                  <input
-                    type="text"
-                    value={newNews.photo}
-                    onChange={(e) =>
-                      setNewNews({ ...newNews, photo: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="photo.jpg"
                   />
                 </div>
               </div>
@@ -1657,18 +1865,18 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Headline News Modal */}
-        {showHeadlineNewsModal && (
+        {/* Awareness Modal */}
+        {showAwarenessModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold">
-                  {newHeadlineNews.id ? "Modifier" : "Ajouter"} Headline News
+                  {newAwareness._id ? "Modifier" : "Ajouter"} Message de Sensibilisation
                 </h3>
                 <button
                   onClick={() => {
-                    setShowHeadlineNewsModal(false);
-                    resetHeadlineNewsForm();
+                    setShowAwarenessModal(false);
+                    resetAwarenessForm();
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -1680,136 +1888,48 @@ export default function AdminDashboard() {
                   <label className="block text-sm font-medium mb-1">Titre *</label>
                   <input
                     type="text"
-                    value={newHeadlineNews.title}
+                    value={newAwareness.title}
                     onChange={(e) =>
-                      setNewHeadlineNews({ ...newHeadlineNews, title: e.target.value })
+                      setNewAwareness({ ...newAwareness, title: e.target.value })
                     }
                     className="w-full p-2 border rounded-lg"
-                    placeholder="Titre de la nouvelle principale"
+                    placeholder="Titre du message de sensibilisation"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Description *</label>
                   <textarea
-                    value={newHeadlineNews.description}
+                    value={newAwareness.description}
                     onChange={(e) =>
-                      setNewHeadlineNews({ ...newHeadlineNews, description: e.target.value })
+                      setNewAwareness({ ...newAwareness, description: e.target.value })
                     }
                     className="w-full p-2 border rounded-lg"
-                    placeholder="Description de la nouvelle principale"
-                    rows="4"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Image</label>
-                  <input
-                    type="text"
-                    value={newHeadlineNews.image}
-                    onChange={(e) =>
-                      setNewHeadlineNews({ ...newHeadlineNews, image: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="headline.jpg"
+                    placeholder="Description du message de sensibilisation"
+                    rows="6"
                   />
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button
                   onClick={() => {
-                    setShowHeadlineNewsModal(false);
-                    resetHeadlineNewsForm();
+                    setShowAwarenessModal(false);
+                    resetAwarenessForm();
                   }}
                   className="px-4 py-2 bg-gray-200 rounded-lg"
                 >
                   Annuler
                 </button>
                 <button
-                  onClick={handleSaveHeadlineNews}
+                  onClick={handleSaveAwareness}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg"
                 >
-                  {newHeadlineNews.id ? "Modifier" : "Ajouter"}
+                  {newAwareness._id ? "Modifier" : "Ajouter"}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Banner News Modal */}
-        {showBannerNewsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">
-                  {newBannerNews.id ? "Modifier" : "Ajouter"} Banner News
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowBannerNewsModal(false);
-                    resetBannerNewsForm();
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Titre *</label>
-                  <input
-                    type="text"
-                    value={newBannerNews.title}
-                    onChange={(e) =>
-                      setNewBannerNews({ ...newBannerNews, title: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="Titre de la bannière"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description *</label>
-                  <textarea
-                    value={newBannerNews.description}
-                    onChange={(e) =>
-                      setNewBannerNews({ ...newBannerNews, description: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="Description de la bannière"
-                    rows="4"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Image</label>
-                  <input
-                    type="text"
-                    value={newBannerNews.image}
-                    onChange={(e) =>
-                      setNewBannerNews({ ...newBannerNews, image: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="banner.jpg"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-6">
-                <button
-                  onClick={() => {
-                    setShowBannerNewsModal(false);
-                    resetBannerNewsForm();
-                  }}
-                  className="px-4 py-2 bg-gray-200 rounded-lg"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleSaveBannerNews}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-                >
-                  {newBannerNews.id ? "Modifier" : "Ajouter"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Alert Modal */}
         {showAlertModal && (
@@ -1864,6 +1984,18 @@ export default function AdminDashboard() {
                     }
                     className="w-full p-2 border rounded-lg"
                     placeholder="Type de crime"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description *</label>
+                  <textarea
+                    value={newAlert.description}
+                    onChange={(e) =>
+                      setNewAlert({ ...newAlert, description: e.target.value })
+                    }
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Description détaillée de l'alerte"
+                    rows="4"
                   />
                 </div>
               </div>
