@@ -38,7 +38,9 @@ export async function GET(request) {
 
 // POST - Create new commissioner
 export async function POST(req) {
+  let client;
   try {
+    client = new MongoClient(uri);
     const body = await req.json();
     const { fullName, email, phone, username, password, city, policeStation } = body;
     console.log(fullName, email, phone, username, password, city, policeStation);
@@ -46,7 +48,6 @@ export async function POST(req) {
       return NextResponse.json({ message: "All fields are required!" }, { status: 400 });
     }
 
-    const client = new MongoClient(uri);
     await client.connect();
     const db = client.db("e-oprogem"); 
     const admins = db.collection("Commissaires");
@@ -107,7 +108,9 @@ export async function POST(req) {
     console.error(error);
     return NextResponse.json({ message: "Server error!" }, { status: 500 });
   } finally {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   }
 }
 

@@ -143,7 +143,7 @@ const ComplaintsTable = () => {
           <h3 className="text-lg font-medium text-gray-600 mb-2">No Complaints Found</h3>
           <p className="text-gray-500">You haven't submitted any complaints yet.</p>
           <a 
-            href="/complaint-form"
+            href="/compalint-form"
             className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Submit Your First Complaint
