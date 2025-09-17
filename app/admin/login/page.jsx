@@ -78,14 +78,7 @@ export default function AdminLogin() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-        <div className="text-center mt-4">
-          <a
-            className="text-blue-600 hover:text-blue-900 transition"
-            href="/admin/register"
-          >
-            Register
-          </a>
-        </div>
+
       </form>
     </div>
   );

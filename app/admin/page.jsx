@@ -183,7 +183,7 @@ export default function AdminDashboard() {
 
   const fetchCommissioners = async () => {
     try {
-      const response = await fetch('/api/Commissaires');
+      const response = await fetch('/api/Commissaires/register');
       if (response.ok) {
         const data = await response.json();
         setCommissioners(data.commissioners || []);
@@ -349,18 +349,35 @@ export default function AdminDashboard() {
 
   // Save Commissioner
   const handleSaveCommissioner = async () => {
-    if (!newCommissioner.name || !newCommissioner.username || !newCommissioner.badgeId) {
+    if (!newCommissioner.name || !newCommissioner.username || !newCommissioner.password || !newCommissioner.city || !newCommissioner.policeStation || !newCommissioner.email || !newCommissioner.phone) {
       alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
     try {
-      const method = newCommissioner._id ? 'PUT' : 'POST';
-      const body = newCommissioner._id 
-        ? { id: newCommissioner._id, ...newCommissioner }
-        : newCommissioner;
+      const method = newCommissioner.id ? 'PUT' : 'POST';
+      const body = newCommissioner.id 
+        ? { 
+            id: newCommissioner.id, 
+            fullName: newCommissioner.name,
+            email: newCommissioner.email,
+            phone: newCommissioner.phone,
+            username: newCommissioner.username,
+            password: newCommissioner.password,
+            city: newCommissioner.city,
+            policeStation: newCommissioner.policeStation
+          }
+        : { 
+            fullName: newCommissioner.name,
+            email: newCommissioner.email,
+            phone: newCommissioner.phone,
+            username: newCommissioner.username,
+            password: newCommissioner.password,
+            city: newCommissioner.city,
+            policeStation: newCommissioner.policeStation
+          };
 
-      const response = await fetch('/api/Commissaires', {
+      const response = await fetch('/api/Commissaires/register', {
         method: method,
         headers: {
           'Content-Type': 'application/json',
@@ -388,13 +405,13 @@ export default function AdminDashboard() {
         });
         setShowCommissionerModal(false);
         setShowPassword(false);
-        alert("Commissioner saved successfully!");
+        alert(newCommissioner.id ? "Commissaire modifié avec succès!" : "Commissaire ajouté avec succès!");
       } else {
-        alert("Error: " + result.message);
+        alert("Erreur: " + result.message);
       }
     } catch (error) {
       console.error('Error saving commissioner:', error);
-      alert("Error saving commissioner");
+      alert("Erreur lors de la sauvegarde");
     }
   };
 
@@ -619,7 +636,7 @@ export default function AdminDashboard() {
   const handleDeleteCommissioner = async (id) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce commissaire?")) {
       try {
-        const response = await fetch('/api/Commissaires', {
+        const response = await fetch('/api/Commissaires/register', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -981,6 +998,13 @@ export default function AdminDashboard() {
           <section className="mb-10">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Commissaires</h2>
+              <button
+                onClick={() => setShowCommissionerModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+              >
+                <Plus size={18} />
+                Ajouter Commissaire
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
@@ -999,7 +1023,7 @@ export default function AdminDashboard() {
                 <tbody>
                   {commissioners.map((c) => (
                     <tr key={c._id || c.id} className="border-b">
-                      <td className="p-3">{c.name}</td>
+                      <td className="p-3">{c.fullName || c.name}</td>
                       <td className="p-3">{c.username}</td>
                       <td className="p-3">{c.badgeId}</td>
                       <td className="p-3">{c.city}</td>
@@ -1011,7 +1035,18 @@ export default function AdminDashboard() {
                         <button
                           className="text-blue-600"
                           onClick={() => {
-                            setNewCommissioner(c);
+                            setNewCommissioner({
+                              id: c._id || c.id,
+                              name: c.fullName || c.name,
+                              username: c.username,
+                              password: "", // Don't pre-fill password for security
+                              badgeId: c.badgeId || "",
+                              city: c.city,
+                              policeStation: c.policeStation,
+                              region: c.region || "",
+                              phone: c.phone,
+                              email: c.email,
+                            });
                             setShowCommissionerModal(true);
                           }}
                         >

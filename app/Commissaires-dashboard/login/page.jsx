@@ -19,7 +19,17 @@ export default function AdminLogin() {
       const data = await res.json();
       if (res.ok) {
         alert(data.message);
-        localStorage.setItem("commissioners", JSON.stringify(form));
+        // Store complete commissioner data including username, policeStation, fullName
+        const commissionerData = {
+          username: data.commissioner.username,
+          fullName: data.commissioner.fullName,
+          policeStation: data.commissioner.policeStation,
+          email: data.commissioner.email,
+          phone: data.commissioner.phone,
+          city: data.commissioner.city,
+          role: data.commissioner.role
+        };
+        localStorage.setItem("commissioners", JSON.stringify([commissionerData]));
         router.push("/Commissaires-dashboard");
       } else {
         alert(data.message);
@@ -53,11 +63,7 @@ export default function AdminLogin() {
         <button className="w-full bg-blue-600 text-white p-2 rounded">
           Login
         </button>
-        <br /><br />
-        <center>
-
-        <a className="text-blue-600 hover:text-blue-900 transition"  href="/Commissaires-dashboard/register">Register now</a>
-        </center>
+       
       </form>
     </div>
   );

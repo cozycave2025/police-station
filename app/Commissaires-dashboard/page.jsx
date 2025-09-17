@@ -38,8 +38,8 @@ export default function PoliceDashboard() {
     setComplaintsLoading(true);
     try {
       const commissionerUsername = JSON.parse(localStorage.getItem("commissioners"));
-      console.log(commissionerUsername[0].username);
-      if (!commissionerUsername) return;
+      console.log(commissionerUsername?.[0]?.username);
+      if (!commissionerUsername || !commissionerUsername[0]) return;
 
       const response = await fetch("/api/getcomplaints", {
         method: "POST",
@@ -96,6 +96,10 @@ export default function PoliceDashboard() {
     
     // Get commissioner username from localStorage
     const commissionerUsername = JSON.parse(localStorage.getItem("commissioners"));
+    if (!commissionerUsername || !commissionerUsername[0]) {
+      alert("Commissioner data not found!");
+      return;
+    }
     try {
       const res = await fetch("/api/police_agent/add", {
         method: "POST",
@@ -268,7 +272,7 @@ export default function PoliceDashboard() {
     );
   }
 
-  const commissionerData = JSON.parse(localStorage.getItem("commissioners") || '[{}]')[0];
+  const commissionerData = JSON.parse(localStorage.getItem("commissioners") || '[{}]')[0] || {};
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
@@ -290,8 +294,8 @@ export default function PoliceDashboard() {
             <User size={20} />
           </div>
           <div>
-            <p className="text-sm font-medium">{commissionerData.name || 'Commissaire'}</p>
-            <p className="text-xs text-blue-300">Commissaire de Police</p>
+            <p className="text-sm font-medium">{commissionerData.fullName || commissionerData.name || 'Commissaire'}</p>
+            <p className="text-xs text-blue-300">{commissionerData.role || 'Commissaire de Police'}</p>
             <p className="text-xs text-blue-200">{commissionerData.policeStation || 'Station'}</p>
           </div>
         </div>
@@ -309,8 +313,7 @@ export default function PoliceDashboard() {
             <FileText size={18} /> Complaints
           </li>
           <li
-            className={`fl
-              ex items-center gap-2 cursor-pointer ${activeTab === "investigation" ? "font-bold" : ""}`}
+            className={`flex items-center gap-2 cursor-pointer ${activeTab === "investigation" ? "font-bold" : ""}`}
             onClick={() => setActiveTab("investigation")}
           >
             <Shield size={18} /> Under Investigation

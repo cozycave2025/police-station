@@ -100,18 +100,16 @@ export default function Register() {
   return (
     <>
       <Header />
-      <br />
-      <br />
-      <div className="min-h-screen bg-white flex items-center justify-center p-6">
-        <div className="w-full max-w-3xl bg-white shadow-lg rounded-xl p-8">
-          <h2 className="text-3xl font-bold text-center text-blue-600 drop-shadow-md mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
+        <div className="w-full max-w-full sm:max-w-2xl lg:max-w-4xl bg-white shadow-xl rounded-xl p-4 sm:p-6 lg:p-8 mx-auto">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center text-blue-600 drop-shadow-md mb-4 sm:mb-6">
             Registration
           </h2>
 
           {/* message */}
           {message.text && (
             <div
-              className={`mb-4 p-3 rounded-lg text-center ${
+              className={`mb-4 p-3 rounded-lg text-center text-sm sm:text-base ${
                 message.type === "success"
                   ? "bg-green-100 text-green-700 border border-green-300"
                   : "bg-red-100 text-red-700 border border-red-300"
@@ -123,11 +121,11 @@ export default function Register() {
 
           <form
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-5"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
           >
             {/* Role */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="col-span-1 sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Role
               </label>
               <select
@@ -135,7 +133,7 @@ export default function Register() {
                 value={formData.role}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
               >
                 <option value="user">User</option>
                 <option value="anonymous">Anonymous</option>
@@ -146,8 +144,8 @@ export default function Register() {
             {formData.role === "anonymous" ? (
               <>
                 {/* Username */}
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Username
                   </label>
                   <input
@@ -157,14 +155,14 @@ export default function Register() {
                     value={formData.username}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
                   </label>
                   <input
@@ -174,12 +172,12 @@ export default function Register() {
                     value={formData.fullName}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone
                   </label>
                   <input
@@ -189,12 +187,12 @@ export default function Register() {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email
                   </label>
                   <input
@@ -204,12 +202,12 @@ export default function Register() {
                     value={formData.email}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     CNIC
                   </label>
                   <input
@@ -219,12 +217,12 @@ export default function Register() {
                     onChange={handleChange}
                     disabled={loading}
                     placeholder="XXXXX-XXXXXXX-X"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     City *
                   </label>
                   <input
@@ -234,21 +232,21 @@ export default function Register() {
                     value={formData.city}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
 
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Address
                   </label>
                   <textarea
                     name="address"
-                    rows="2"
+                    rows="3"
                     value={formData.address}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
                   />
                 </div>
               </>
@@ -256,7 +254,7 @@ export default function Register() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <input
@@ -266,12 +264,12 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password
               </label>
               <input
@@ -281,15 +279,15 @@ export default function Register() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm sm:text-base"
               />
             </div>
 
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg shadow-md hover:bg-blue-700 transition disabled:bg-blue-300"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg shadow-md hover:bg-blue-700 transition disabled:bg-blue-300 text-sm sm:text-base"
               >
                 {loading ? "Registering..." : "Register"}
               </button>

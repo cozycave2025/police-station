@@ -44,6 +44,11 @@ export default function NewsPage() {
 
   useEffect(() => {
     fetchNews(1, true);
+    const user = localStorage.getItem("user")
+    if(user==null){
+     window.location.href = "/login" 
+    }
+
   }, []);
 
   // Handle load more functionality
@@ -61,14 +66,22 @@ export default function NewsPage() {
     <Header/>
     <div className="min-h-screen bg-gray-50">
       {/* Banner */}
-      <section className="relative h-[450px] bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1547471080-7cc2caa01a7e')" }}>
-        <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4">Guinée News Today</h1>
-          <p className="text-xl md:text-2xl text-white opacity-80 max-w-2xl text-center">
-            Your source for the latest news and updates from Guinea
-          </p>
-        </div>
-      </section>
+      <section 
+  className="relative h-[450px] bg-cover bg-center" 
+  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1547471080-7cc2caa01a7e')" }}
+>
+  {/* Black Overlay */}
+  <div className="absolute inset-0 bg-black/60"></div>
+
+  {/* Text */}
+  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+    <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4">Guinée News Today</h1>
+    <p className="text-xl md:text-2xl text-white opacity-80 max-w-2xl">
+      Your source for the latest news and updates from Guinea
+    </p>
+  </div>
+</section>
+
 
       {/* Category Filter */}
       
@@ -112,7 +125,7 @@ export default function NewsPage() {
             <button
               onClick={handleLoadMore}
               disabled={loading}
-              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : 'Load More News'}
             </button>

@@ -31,7 +31,19 @@ export async function POST(req) {
     }
 
     return NextResponse.json(
-      { message: "Login successful!", adminId: admin._id },
+      { 
+        message: "Login successful!", 
+        adminId: admin._id,
+        commissioner: {
+          username: admin.username,
+          fullName: admin.fullName,
+          policeStation: admin.policeStation,
+          email: admin.email,
+          phone: admin.phone,
+          city: admin.city,
+          role: admin.role
+        }
+      },
       { status: 200 }
     );
   } catch (error) {
