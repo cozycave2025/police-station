@@ -33,11 +33,11 @@ export default function OfficerLogin() {
         
         router.push("/officer-dashboard");
       } else {
-        alert(data.message || "Invalid officer credentials!");
+        alert(data.message || "Identifiants de l'agent invalides !");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Network error. Please try again.");
+      alert("Erreur réseau. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -49,10 +49,10 @@ export default function OfficerLogin() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded shadow-md w-96"
       >
-        <h2 className="text-2xl font-bold mb-6">Officer Login</h2>
+        <h2 className="text-2xl font-bold mb-6">Connexion Agent</h2>
         <input
           type="text"
-          placeholder="Username"
+          placeholder="Nom d'utilisateur"
           className="w-full mb-4 p-2 border rounded"
           value={form.username}
           onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -61,7 +61,7 @@ export default function OfficerLogin() {
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Mot de passe"
           className="w-full mb-6 p-2 border rounded"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -73,7 +73,7 @@ export default function OfficerLogin() {
           className="w-full bg-blue-600 text-white p-2 rounded disabled:bg-blue-300"
           disabled={loading}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Connexion..." : "Se connecter"}
         </button>
       </form>
     </div>

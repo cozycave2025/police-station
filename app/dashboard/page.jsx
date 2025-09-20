@@ -27,7 +27,7 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-gray-800 text-xl">Loading...</div>
+        <div className="text-gray-800 text-xl">Chargement...</div>
       </div>
     );
   }
@@ -42,12 +42,12 @@ export default function Dashboard() {
         <DashboardHeader />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
-          {/* Quick Actions (file a complaint etc.) */}
+          {/* Actions rapides (déposer une plainte, etc.) */}
           <QuickActions />
           <br />
 
           {/* My Complaints */}
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">My Complaints</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Mes plaintes</h2>
           <ComplaintsTable />
           <br />
 

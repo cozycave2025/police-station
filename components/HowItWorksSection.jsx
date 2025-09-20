@@ -5,27 +5,27 @@ const HowItWorksSection = () => {
   const steps = [
     {
       icon: FileText,
-      title: "File Complaint",
+      title: "Déposer une plainte",
       description:
-        "Submit your complaint securely with complete confidentiality and anonymity protection.",
+        "Soumettez votre plainte en toute sécurité avec une confidentialité totale et une protection de l'anonymat.",
     },
     {
       icon: Search,
-      title: "Police Review",
+      title: "Examen par la police",
       description:
-        "Assigned officers review your case and begin the investigation process immediately.",
+        "Les agents assignés examinent votre dossier et commencent immédiatement l'enquête.",
     },
     {
       icon: Bell,
-      title: "Case Updates",
+      title: "Mises à jour du dossier",
       description:
-        "Receive real-time notifications about your case progress and important developments.",
+        "Recevez des notifications en temps réel sur l'avancement de votre dossier et les développements importants.",
     },
     {
       icon: CheckCircle,
-      title: "Resolution",
+      title: "Résolution",
       description:
-        "Track your case to completion with full transparency and justice delivery.",
+        "Suivez votre dossier jusqu'à sa clôture avec une transparence totale et un rendu de justice.",
     },
   ];
 
@@ -38,11 +38,11 @@ const HowItWorksSection = () => {
             className="text-3xl md:text-4xl font-bold text-blue-600 
             drop-shadow-[0_0_10px_#3b82f6]"
           >
-            How Our System Works
+            Comment fonctionne notre système
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mt-4">
-            A simple, secure, and transparent process designed to ensure justice
-            and protect your privacy.
+            Un processus simple, sécurisé et transparent, conçu pour garantir la justice
+            et protéger votre vie privée.
           </p>
         </div>
 
@@ -79,9 +79,9 @@ const HowItWorksSection = () => {
         <div className="text-center mt-12">
           <p className="text-sm text-gray-700 border border-blue-200 bg-white px-6 py-3 rounded-lg inline-block shadow hover:shadow-[0_0_12px_#3b82f6] transition">
             <span className="font-semibold text-blue-600">
-              Average Resolution Time:
+              Délai moyen de résolution :
             </span>{" "}
-            7-14 business days
+            7 à 14 jours ouvrables
           </p>
         </div>
       </div>

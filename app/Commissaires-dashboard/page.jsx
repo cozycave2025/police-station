@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, User, FileText, Shield, Archive, LogOut } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 
 export default function PoliceDashboard() {
@@ -17,10 +18,6 @@ export default function PoliceDashboard() {
   }, []);
 
   // Default data
-  const defaultOfficers = [
-    { id: 1, name: "Officer Ali", rank: "Inspector", badge: "PK-101", username: "ali101", password: "123456" },
-    { id: 2, name: "Officer Ahmed", rank: "Sub-Inspector", badge: "PK-102", username: "ahmed102", password: "123456" },
-  ];
 
   const defaultComplaints = [
     { id: 1, description: "Robbery at Market", status: "Pending" },
@@ -29,6 +26,7 @@ export default function PoliceDashboard() {
 
   const [activeTab, setActiveTab] = useState("officers");
   const [officers, setOfficers] = useState([]);
+  const [officersLoading, setOfficersLoading] = useState(true);
   const [complaints, setComplaints] = useState([]);
   const [newOfficer, setNewOfficer] = useState({ name: "", rank: "", badge: "", username: "", password: "" });
   const [editingOfficer, setEditingOfficer] = useState(null);
@@ -64,30 +62,20 @@ export default function PoliceDashboard() {
     }
   };
 
-  // LocalStorage load
+  // Initial load
   useEffect(() => {
-    const storedOfficers = localStorage.getItem("officers");
-
-    if (storedOfficers) {
-      setOfficers(JSON.parse(storedOfficers));
-    } else {
-      setOfficers(defaultOfficers);
-      localStorage.setItem("officers", JSON.stringify(defaultOfficers));
-    }
-
-    // Fetch complaints from database instead of localStorage
+    // Fetch complaints and officers from database on mount
     fetchStationComplaints();
+    fetchOfficers();
   }, []);
 
-  // Save functions
+  // Save functions (not using localStorage anymore)
   const saveOfficers = (updated) => {
     setOfficers(updated);
-    localStorage.setItem("officers", JSON.stringify(updated));
   };
 
   const saveComplaints = (updated) => {
     setComplaints(updated);
-    localStorage.setItem("complaints", JSON.stringify(updated));
   };
 
   // Officer CRUD
@@ -139,18 +127,17 @@ export default function PoliceDashboard() {
 
   const fetchOfficers = async () => {
     try {
+      setOfficersLoading(true);
       const res = await fetch("/api/police_agent/officers");
       const data = await res.json();
       setOfficers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
       setOfficers([]);
+    } finally {
+      setOfficersLoading(false);
     }
   };
-  
-  useEffect(() => {
-    fetchOfficers();
-  }, []);
 
   const editOfficer = async (id, updatedData) => {
     try {
@@ -286,7 +273,7 @@ export default function PoliceDashboard() {
             height={40}
             className="rounded-full mr-3"
           />
-          <h1 className="text-2xl font-bold">Commissaires Dashboard</h1>
+          <h1 className="text-2xl font-bold">Tableau de bord Commissaire</h1>
         </div>
         
         <div className="flex items-center mb-6 p-3 bg-blue-700 rounded-lg">
@@ -295,8 +282,8 @@ export default function PoliceDashboard() {
           </div>
           <div>
             <p className="text-sm font-medium">{commissionerData.fullName || commissionerData.name || 'Commissaire'}</p>
-            <p className="text-xs text-blue-300">{commissionerData.role || 'Commissaire de Police'}</p>
-            <p className="text-xs text-blue-200">{commissionerData.policeStation || 'Station'}</p>
+            <p className="text-xs text-blue-300">{commissionerData.role || 'Commissaire de police'}</p>
+            <p className="text-xs text-blue-200">{commissionerData.policeStation || 'Commissariat'}</p>
           </div>
         </div>
         <ul className="space-y-4">
@@ -304,25 +291,25 @@ export default function PoliceDashboard() {
             className={`flex items-center gap-2 cursor-pointer ${activeTab === "officers" ? "font-bold" : ""}`}
             onClick={() => setActiveTab("officers")}
           >
-            <User size={18} /> Officers
+            <User size={18} /> Agents
           </li>
           <li
             className={`flex items-center gap-2 cursor-pointer ${activeTab === "complaints" ? "font-bold" : ""}`}
             onClick={() => setActiveTab("complaints")}
           >
-            <FileText size={18} /> Complaints
+            <FileText size={18} /> Plaintes
           </li>
           <li
             className={`flex items-center gap-2 cursor-pointer ${activeTab === "investigation" ? "font-bold" : ""}`}
             onClick={() => setActiveTab("investigation")}
           >
-            <Shield size={18} /> Under Investigation
+            <Shield size={18} /> En cours d'enquête
           </li>
           <li
             className={`flex items-center gap-2 cursor-pointer ${activeTab === "closed" ? "font-bold" : ""}`}
             onClick={() => setActiveTab("closed")}
           >
-            <Archive size={18} /> Case Closed
+            <Archive size={18} /> Dossiers clôturés
           </li>
         </ul>
         
@@ -343,40 +330,40 @@ export default function PoliceDashboard() {
         {/* Officers Section */}
         {activeTab === "officers" && (
           <>
-            <h2 className="text-2xl font-bold mb-6">Manage Officers</h2>
+            <h2 className="text-2xl font-bold mb-6">Gérer les agents</h2>
             <div className="mb-6 bg-white shadow p-4 rounded-lg">
               <div className="flex gap-4 flex-wrap">
                 <input
                   type="text"
-                  placeholder="Name"
+                  placeholder="Nom"
                   value={newOfficer.name}
                   onChange={(e) => setNewOfficer({ ...newOfficer, name: e.target.value })}
                   className="border rounded p-2 flex-1"
                 />
                 <input
                   type="text"
-                  placeholder="Rank"
+                  placeholder="Grade"
                   value={newOfficer.rank}
                   onChange={(e) => setNewOfficer({ ...newOfficer, rank: e.target.value })}
                   className="border rounded p-2 flex-1"
                 />
                 <input
                   type="text"
-                  placeholder="Badge No"
+                  placeholder="Numéro de badge"
                   value={newOfficer.badge}
                   onChange={(e) => setNewOfficer({ ...newOfficer, badge: e.target.value })}
                   className="border rounded p-2 flex-1"
                 />
                 <input
                   type="text"
-                  placeholder="Username"
+                  placeholder="Nom d'utilisateur"
                   value={newOfficer.username}
                   onChange={(e) => setNewOfficer({ ...newOfficer, username: e.target.value })}
                   className="border rounded p-2 flex-1"
                 />
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Mot de passe"
                   value={newOfficer.password}
                   onChange={(e) => setNewOfficer({ ...newOfficer, password: e.target.value })}
                   className="border rounded p-2 flex-1"
@@ -386,59 +373,66 @@ export default function PoliceDashboard() {
                     onClick={saveEdit}
                     className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2"
                   >
-                    <Edit size={16} /> Save
+                    <Edit size={16} /> Enregistrer
                   </button>
                 ) : (
                   <button
                     onClick={addOfficer}
                     className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2"
                   >
-                    <Plus size={16} /> Add
+                    <Plus size={16} /> Ajouter
                   </button>
                 )}
               </div>
             </div>
 
             {/* Officers Table */}
-            <div className="bg-white shadow rounded-lg overflow-x-auto">
-              <table className="min-w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-3 border">Name</th>
-                    <th className="p-3 border">Rank</th>
-                    <th className="p-3 border">Badge</th>
-                    <th className="p-3 border">Username</th>
-                    <th className="p-3 border">Password</th>
-                    <th className="p-3 border">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.isArray(officers) && officers.map((officer) => (
-                    <tr key={officer.id || officer._id} className="hover:bg-gray-100">
-                      <td className="p-3 border">{officer.name}</td>
-                      <td className="p-3 border">{officer.rank}</td>
-                      <td className="p-3 border">{officer.badge}</td>
-                      <td className="p-3 border">{officer.username}</td>
-                      <td className="p-3 border">{officer.password}</td>
-                      <td className="p-3 border flex gap-2">
-                        <button
-                          onClick={() => startEdit(officer)}
-                          className="bg-yellow-500 text-white px-3 py-1 rounded flex items-center gap-1"
-                        >
-                          <Edit size={14} /> Edit
-                        </button>
-                        <button
-                          onClick={() => deleteOfficer(officer.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1"
-                        >
-                          <Trash2 size={14} /> Delete
-                        </button>
-                      </td>
+            {officersLoading ? (
+              <div className="bg-white shadow rounded-lg p-8 text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Chargement des agents...</p>
+              </div>
+            ) : (
+              <div className="bg-white shadow rounded-lg overflow-x-auto">
+                <table className="min-w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="p-3 border">Nom</th>
+                      <th className="p-3 border">Grade</th>
+                      <th className="p-3 border">Badge</th>
+                      <th className="p-3 border">Nom d'utilisateur</th>
+                      <th className="p-3 border">Mot de passe</th>
+                      <th className="p-3 border">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {Array.isArray(officers) && officers.map((officer) => (
+                      <tr key={officer.id || officer._id} className="hover:bg-gray-100">
+                        <td className="p-3 border">{officer.name}</td>
+                        <td className="p-3 border">{officer.rank}</td>
+                        <td className="p-3 border">{officer.badge}</td>
+                        <td className="p-3 border">{officer.username}</td>
+                        <td className="p-3 border">{officer.password}</td>
+                        <td className="p-3 border flex gap-2">
+                          <button
+                            onClick={() => startEdit(officer)}
+                            className="bg-yellow-500 text-white px-3 py-1 rounded flex items-center gap-1"
+                          >
+                            <Edit size={14} /> Modifier
+                          </button>
+                          <button
+                            onClick={() => deleteOfficer(officer.id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1"
+                          >
+                            <Trash2 size={14} /> Supprimer
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             <br />
 
            
@@ -448,16 +442,22 @@ export default function PoliceDashboard() {
         {/* Complaints Section */}
         {activeTab === "complaints" && (
           <>
-            <h2 className="text-2xl font-bold mb-6">Station Complaints</h2>
+            <h2 className="text-2xl font-bold mb-6">Plaintes du commissariat</h2>
+            {complaintsLoading ? (
+              <div className="bg-white shadow rounded-lg p-8 text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Chargement des plaintes...</p>
+              </div>
+            ) : (
             <div className="bg-white shadow rounded-lg overflow-x-auto">
               <table className="min-w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-200">
-                    <th className="p-3 border">Case ID</th>
-                    <th className="p-3 border">Name</th>
-                    <th className="p-3 border">Title</th>
+                    <th className="p-3 border">ID du dossier</th>
+                    <th className="p-3 border">Nom</th>
+                    <th className="p-3 border">Titre</th>
                     <th className="p-3 border">Description</th>
-                    <th className="p-3 border">Status</th>
+                    <th className="p-3 border">Statut</th>
                     <th className="p-3 border">Date</th>
                     <th className="p-3 border">Actions</th>
                   </tr>
@@ -474,31 +474,29 @@ export default function PoliceDashboard() {
                         <td className="p-3 border">{complaint.status}</td>
                         <td className="p-3 border">{complaint.submissionDate}</td>
                         <td className="p-3 border flex gap-2">
-                          <button
-                            onClick={() => moveToInvestigation(complaint._id)}
-                            className="bg-yellow-500 text-white px-3 py-1 rounded"
-                          >
-                            Under Investigation
-                          </button>
-                          <button
-                            onClick={() => closeCase(complaint._id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                          >
-                            Case Closed
-                          </button>
+                          <Link href={`/Commissaires-dashboard/case/${complaint._id}`} className="bg-blue-600 text-white px-3 py-1 rounded">
+                            Voir les détails
+                          </Link>
                         </td>
                       </tr>
                     ))}
                 </tbody>
               </table>
             </div>
+            )}
           </>
         )}
 
         {/* Under Investigation Section */}
         {activeTab === "investigation" && (
           <>
-            <h2 className="text-2xl font-bold mb-6">Under Investigation</h2>
+            <h2 className="text-2xl font-bold mb-6">En cours d'enquête</h2>
+            {complaintsLoading ? (
+              <div className="bg-white shadow rounded-lg p-8 text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Chargement des plaintes...</p>
+              </div>
+            ) : (
             <div className="bg-white shadow rounded-lg overflow-x-auto">
               <table className="min-w-full text-left border-collapse">
                 <thead>
@@ -524,25 +522,29 @@ export default function PoliceDashboard() {
                         <td className="p-3 border">{complaint.status}</td>
                         <td className="p-3 border">{complaint.submissionDate}</td>
                         <td className="p-3 border">
-                          <button
-                            onClick={() => closeCase(complaint._id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                          >
-                            Case Closed
-                          </button>
+                          <Link href={`/Commissaires-dashboard/case/${complaint._id}`} className="bg-blue-600 text-white px-3 py-1 rounded">
+                            View Details
+                          </Link>
                         </td>
                       </tr>
                     ))}
                 </tbody>
               </table>
             </div>
+            )}
           </>
         )}
 
         {/* Case Closed Section */}
         {activeTab === "closed" && (
           <>
-            <h2 className="text-2xl font-bold mb-6">Case Closed</h2>
+            <h2 className="text-2xl font-bold mb-6">Dossiers clôturés</h2>
+            {complaintsLoading ? (
+              <div className="bg-white shadow rounded-lg p-8 text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading complaints...</p>
+              </div>
+            ) : (
             <div className="bg-white shadow rounded-lg overflow-x-auto">
               <table className="min-w-full text-left border-collapse">
                 <thead>
@@ -568,18 +570,16 @@ export default function PoliceDashboard() {
                         <td className="p-3 border">{complaint.status}</td>
                         <td className="p-3 border">{complaint.submissionDate}</td>
                         <td className="p-3 border">
-                          <button
-                            onClick={() => deleteClosedCase(complaint._id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                          >
-                            Delete
-                          </button>
+                          <Link href={`/Commissaires-dashboard/case/${complaint._id}`} className="bg-blue-600 text-white px-3 py-1 rounded">
+                            View Details
+                          </Link>
                         </td>
                       </tr>
                     ))}
                 </tbody>
               </table>
             </div>
+            )}
           </>
         )}
       </main>

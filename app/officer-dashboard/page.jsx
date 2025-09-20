@@ -1,11 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, Shield, Archive, User, LogOut } from "lucide-react";
+import { FileText, Shield, Archive, User, LogOut, Upload } from "lucide-react";
 import Image from "next/image";
 
 export default function OfficerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [reportFile, setReportFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [assignedCases, setAssignedCases] = useState([]);
+  const [assignedLoading, setAssignedLoading] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [viewingId, setViewingId] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [showReportDetailModal, setShowReportDetailModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
   
   useEffect(() => {
     const loggedIn = localStorage.getItem("isOfficerLoggedIn");
@@ -25,6 +38,97 @@ export default function OfficerDashboard() {
   const [activeTab, setActiveTab] = useState("complaints");
   const [complaints, setComplaints] = useState([]);
   const [complaintsLoading, setComplaintsLoading] = useState(false);
+
+  const openReportModal = (complaint) => {
+    setSelectedComplaint(complaint);
+    setReportFile(null);
+    setShowReportModal(true);
+  };
+
+  // Fetch assigned cases for this officer
+  const fetchAssignedCases = async () => {
+    setAssignedLoading(true);
+    try {
+      const officerData = JSON.parse(localStorage.getItem("officerData") || '{}');
+      if (!officerData?.username) return;
+      const res = await fetch('/api/assigned_cases/by_officer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentUsername: officerData.username })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAssignedCases(data.assignments || []);
+      }
+    } catch (e) {
+      console.error('Error fetching assigned cases', e);
+    } finally {
+      setAssignedLoading(false);
+    }
+  };
+
+  const closeReportModal = () => {
+    setShowReportModal(false);
+    setSelectedComplaint(null);
+    setReportFile(null);
+  };
+
+  // Fetch reports for this officer
+  const fetchReports = async () => {
+    setReportsLoading(true);
+    try {
+      const officerData = JSON.parse(localStorage.getItem("officerData") || '{}');
+      if (!officerData?.username) return;
+      const qs = new URLSearchParams({
+        agentUsername: officerData.username || '',
+        policeStation: officerData.policeStation || '',
+      });
+      const res = await fetch(`/api/police_agent/report?${qs.toString()}`);
+      const data = await res.json();
+      if (res.ok) {
+        setReports(data.reports || []);
+      }
+    } catch (e) {
+      console.error('Error fetching reports', e);
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  const uploadReport = async () => {
+    if (!reportFile) {
+      alert('Please choose a PDF or image file.');
+      return;
+    }
+    try {
+      setIsUploading(true);
+      const officerData = JSON.parse(localStorage.getItem("officerData") || '{}');
+      const formData = new FormData();
+      formData.append('file', reportFile);
+      formData.append('complaint', JSON.stringify(selectedComplaint));
+      formData.append('agentName', officerData?.name || '');
+      formData.append('agentUsername', officerData?.username || '');
+      formData.append('station', officerData?.policeStation || '');
+
+      const res = await fetch('/api/police_agent/report', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to upload report');
+      }
+      alert('Report uploaded successfully');
+      closeReportModal();
+      // Refresh reports list so the new report appears under Reports tab
+      fetchReports();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Fetch complaints from database based on officer's station
   const fetchStationComplaints = async () => {
@@ -59,7 +163,26 @@ export default function OfficerDashboard() {
   // Load complaints from database
   useEffect(() => {
     fetchStationComplaints();
+    fetchAssignedCases();
+    fetchReports();
   }, []);
+
+  // Refetch reports when switching to Reports tab
+  useEffect(() => {
+    if (activeTab === 'reports') {
+      fetchReports();
+    }
+  }, [activeTab]);
+
+  const openAssignmentDetails = (assignment) => {
+    setSelectedAssignment(assignment);
+    setShowDetailModal(true);
+  };
+  const closeAssignmentDetails = () => {
+    setShowDetailModal(false);
+    setSelectedAssignment(null);
+    setViewingId(null);
+  };
 
   // Database integration for complaint status updates
   const updateComplaintStatus = async (id, newStatus) => {
@@ -139,7 +262,7 @@ export default function OfficerDashboard() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg">Loading Officer Dashboard...</p>
+          <p className="mt-4 text-gray-600 text-lg">Chargement du tableau de bord de l'agent...</p>
         </div>
       </div>
     );
@@ -159,7 +282,7 @@ export default function OfficerDashboard() {
               height={40}
               className="rounded-full mr-3"
             />
-            <h1 className="text-2xl font-bold">Officer Dashboard</h1>
+            <h1 className="text-2xl font-bold">Tableau de bord Agent</h1>
           </div>
           
           <div className="flex items-center mb-6 p-3 bg-blue-700 rounded-lg">
@@ -167,8 +290,8 @@ export default function OfficerDashboard() {
               <User size={20} />
             </div>
             <div>
-              <p className="text-sm font-medium">{JSON.parse(localStorage.getItem("officerData") || '{}').name || 'Officer'}</p>
-              <p className="text-xs text-blue-300">Police Officer</p>
+              <p className="text-sm font-medium">{JSON.parse(localStorage.getItem("officerData") || '{}').name || 'Agent'}</p>
+              <p className="text-xs text-blue-300">Agent de police</p>
             </div>
           </div>
           <ul className="space-y-4">
@@ -178,15 +301,15 @@ export default function OfficerDashboard() {
               }`}
               onClick={() => setActiveTab("complaints")}
             >
-              <FileText size={18} /> Complaints
+              <FileText size={18} /> Plaintes
             </li>
             <li
               className={`flex items-center gap-2 cursor-pointer ${
-                activeTab === "investigation" ? "font-bold" : ""
+                activeTab === "reports" ? "font-bold" : ""
               }`}
-              onClick={() => setActiveTab("investigation")}
+              onClick={() => setActiveTab("reports")}
             >
-              <Shield size={18} /> Under Investigation
+              <Shield size={18} /> Rapports
             </li>
             <li
               className={`flex items-center gap-2 cursor-pointer ${
@@ -194,7 +317,7 @@ export default function OfficerDashboard() {
               }`}
               onClick={() => setActiveTab("closed")}
             >
-              <Archive size={18} /> Case Closed
+              <Archive size={18} /> Statut des rapports
             </li>
           </ul>
         </div>
@@ -212,128 +335,252 @@ export default function OfficerDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 p-6">
-        {/* Complaints Section */}
-        <br/>
-        {activeTab === "complaints" && (
-          <>
-            <h2 className="text-2xl font-bold mb-6">Pending Complaints</h2>
-            {complaintsLoading ? (
-              <div className="bg-white shadow rounded-lg p-8 text-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading complaints...</p>
-              </div>
-            ) : (
-              <div className="bg-white shadow rounded-lg overflow-x-auto">
-                <table className="min-w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="p-3 border">Description</th>
-                      <th className="p-3 border">Status</th>
-                      <th className="p-3 border">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {complaints
-                      .filter((c) => c.status === "Pending")
-                      .map((complaint) => (
-                      <tr key={complaint._id || complaint.id} className="hover:bg-gray-100">
-                        <td className="p-3 border">{complaint.description || complaint.complaintType}</td>
-                        <td className="p-3 border">{complaint.status}</td>
-                        <td className="p-3 border flex gap-2">
-                          <button
-                            onClick={() => moveToInvestigation(complaint._id || complaint.id)}
-                            className="bg-yellow-500 text-white px-3 py-1 rounded"
-                          >
-                            Under Investigation
-                          </button>
-                          <button
-                            onClick={() => closeCase(complaint._id || complaint.id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                          >
-                            Case Closed
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+            {/* Section Plaintes */}
+            <br/>
+            {activeTab === "complaints" && (
+              <>
+                <h2 className="text-2xl font-bold mb-6">Plaintes assignées</h2>
+                {assignedLoading ? (
+                  <div className="bg-white shadow rounded-lg p-8 text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Chargement des plaintes assignées...</p>
+                  </div>
+                ) : (
+                  <div className="bg-white shadow rounded-lg overflow-x-auto">
+                    <table className="min-w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-200">
+                          <th className="p-3 border">Titre</th>
+                          <th className="p-3 border">Description</th>
+                          <th className="p-3 border">Statut</th>
+                          <th className="p-3 border">Assignée le</th>
+                          <th className="p-3 border">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {assignedCases
+                          .filter((a) => a.complaintStatus !== 'In Progress')
+                          .map((a) => (
+                          <tr key={a._id} className="hover:bg-gray-100">
+                            <td className="p-3 border">{a.complaint?.title || '-'}</td>
+                            <td className="p-3 border">{a.complaint?.description || '-'}</td>
+                            <td className="p-3 border">{a.complaint?.status || a.status}</td>
+                            <td className="p-3 border">{a.createdAt ? new Date(a.createdAt).toLocaleString() : '-'}</td>
+                            <td className="p-3 border flex gap-2 flex-wrap">
+                              <button
+                                onClick={() => { setViewingId(a._id); setTimeout(() => openAssignmentDetails(a), 300); }}
+                                className={`bg-blue-600 text-white px-3 py-1 rounded ${viewingId === a._id ? 'opacity-50 pointer-events-none' : ''}`}
+                              >
+                                {viewingId === a._id ? 'Chargement...' : 'Voir les détails'}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
-          </>
+
+            {/* Section Rapports */}
+            {activeTab === "reports" && (
+              <>
+                <h2 className="text-2xl font-bold mb-6">Rapports</h2>
+                {reportsLoading ? (
+                  <div className="bg-white shadow rounded-lg p-8 text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Chargement des rapports...</p>
+                  </div>
+                ) : (
+                  <div className="bg-white shadow rounded-lg overflow-x-auto">
+                    <table className="min-w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-200">
+                          <th className="p-3 border">Titre</th>
+                          <th className="p-3 border">Statut du rapport</th>
+                          <th className="p-3 border">Soumis le</th>
+                          <th className="p-3 border">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reports.map((r) => (
+                          <tr key={r._id} className="hover:bg-gray-100">
+                            <td className="p-3 border">{r.complaint?.title || '-'}</td>
+                            <td className="p-3 border">{r.status || 'Pending'}</td>
+                            <td className="p-3 border">{r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}</td>
+                            <td className="p-3 border flex gap-2 flex-wrap">
+                              {r.reportUrl && (
+                                <a href={r.reportUrl} target="_blank" rel="noopener noreferrer" className="bg-green-600 text-white px-3 py-1 rounded">Ouvrir</a>
+                              )}
+                              <button onClick={() => { setSelectedReport(r); setShowReportDetailModal(true); }} className="bg-blue-600 text-white px-3 py-1 rounded">Voir les détails</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Section Statut des rapports */}
+            {activeTab === "closed" && (
+              <>
+                <h2 className="text-2xl font-bold mb-6">Statut des rapports</h2>
+                {reportsLoading ? (
+                  <div className="bg-white shadow rounded-lg p-8 text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading reports...</p>
+                  </div>
+                ) : (
+                  <div className="bg-white shadow rounded-lg overflow-x-auto">
+                    <table className="min-w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-200">
+                          <th className="p-3 border">Title</th>
+                          <th className="p-3 border">Report Status</th>
+                          <th className="p-3 border">Submitted At</th>
+                          <th className="p-3 border">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reports.map((r) => (
+                          <tr key={r._id} className="hover:bg-gray-100">
+                            <td className="p-3 border">{r.complaint?.title || '-'}</td>
+                            <td className="p-3 border">{r.status || 'Pending'}</td>
+                            <td className="p-3 border">{r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}</td>
+                            <td className="p-3 border flex gap-2 flex-wrap">
+                              <button onClick={() => { setSelectedReport(r); setShowReportDetailModal(true); }} className="bg-blue-600 text-white px-3 py-1 rounded">View Details</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
+            )}
+        </main>
+
+        {/* Assignment Details Modal */}
+        {showDetailModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-2xl p-6">
+              <h3 className="text-xl font-semibold mb-4">Détails de l'assignation</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Titre</p>
+                  <p className="font-medium">{selectedAssignment?.complaint?.title || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Statut</p>
+                  <p className="font-medium">{selectedAssignment?.complaint?.status || selectedAssignment?.status}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-sm text-gray-500">Description</p>
+                  <p className="font-medium whitespace-pre-line">{selectedAssignment?.complaint?.description || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Commissariat</p>
+                  <p className="font-medium">{selectedAssignment?.policeStation || selectedAssignment?.complaint?.policeStation || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Ville</p>
+                  <p className="font-medium">{selectedAssignment?.city || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Assignée le</p>
+                  <p className="font-medium">{selectedAssignment?.createdAt ? new Date(selectedAssignment.createdAt).toLocaleString() : '-'}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-sm text-gray-500">Message du commissaire</p>
+                  <p className="font-medium whitespace-pre-line">{selectedAssignment?.message || '-'}</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button onClick={closeAssignmentDetails} className="px-4 py-2 rounded border">Fermer</button>
+                <button onClick={() => openReportModal(selectedAssignment?.complaint)} className="px-4 py-2 rounded bg-blue-600 text-white">Ajouter un rapport</button>
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* Under Investigation Section */}
-        {activeTab === "investigation" && (
-          <>
-            <h2 className="text-2xl font-bold mb-6">Under Investigation</h2>
-            <div className="bg-white shadow rounded-lg overflow-x-auto">
-              <table className="min-w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-3 border">Description</th>
-                    <th className="p-3 border">Status</th>
-                    <th className="p-3 border">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {complaints
-                    .filter((c) => c.status === "Under Investigation")
-                    .map((complaint) => (
-                      <tr key={complaint._id || complaint.id} className="hover:bg-gray-100">
-                        <td className="p-3 border">{complaint.description || complaint.complaintType}</td>
-                        <td className="p-3 border">{complaint.status}</td>
-                        <td className="p-3 border">
-                          <button
-                            onClick={() => closeCase(complaint._id || complaint.id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                          >
-                            Case Closed
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+        {/* Existing Report Modal */}
+        {showReportModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6">
+              <h3 className="text-xl font-semibold mb-4">Ajouter un rapport</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Plainte : {selectedComplaint?.description || selectedComplaint?.complaintType}
+              </p>
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                onChange={(e) => setReportFile(e.target.files?.[0] || null)}
+                className="w-full border rounded p-2 mb-4"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={closeReportModal}
+                  className="px-4 py-2 rounded border"
+                  disabled={isUploading}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={uploadReport}
+                  className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+                  disabled={isUploading}
+                >
+                  {isUploading ? 'Téléchargement...' : 'Téléverser le rapport'}
+                </button>
+              </div>
             </div>
-          </>
+          </div>
         )}
 
-        {/* Case Closed Section */}
-        {activeTab === "closed" && (
-          <>
-            <h2 className="text-2xl font-bold mb-6">Closed Cases</h2>
-            <div className="bg-white shadow rounded-lg overflow-x-auto">
-              <table className="min-w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-3 border">Description</th>
-                    <th className="p-3 border">Status</th>
-                    <th className="p-3 border">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {complaints
-                    .filter((c) => c.status === "Closed")
-                    .map((complaint) => (
-                      <tr key={complaint._id || complaint.id} className="hover:bg-gray-100">
-                        <td className="p-3 border">{complaint.description || complaint.complaintType}</td>
-                        <td className="p-3 border">{complaint.status}</td>
-                        <td className="p-3 border">
-                          <button
-                            onClick={() => deleteClosedCase(complaint._id || complaint.id)}
-                            className="bg-red-600 text-white px-3 py-1 rounded"
-                          >
-                            Delete Permanently
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+        {/* Report Details Modal */}
+        {showReportDetailModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-2xl p-6">
+              <h3 className="text-xl font-semibold mb-4">Report Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Title</p>
+                  <p className="font-medium">{selectedReport?.complaint?.title || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="font-medium">{selectedReport?.complaint?.status || '-'}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-sm text-gray-500">Description</p>
+                  <p className="font-medium whitespace-pre-line">{selectedReport?.complaint?.description || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Police Station</p>
+                  <p className="font-medium">{selectedReport?.policeStation || selectedReport?.complaint?.policeStation || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Submitted At</p>
+                  <p className="font-medium">{selectedReport?.createdAt ? new Date(selectedReport.createdAt).toLocaleString() : '-'}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-sm text-gray-500">Report File</p>
+                  {selectedReport?.reportUrl ? (
+                    <a href={selectedReport.reportUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{selectedReport.reportUrl}</a>
+                  ) : (
+                    <p className="font-medium">-</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button onClick={() => setShowReportDetailModal(false)} className="px-4 py-2 rounded border">Close</button>
+              </div>
             </div>
-          </>
+          </div>
         )}
-      </main>
-    </div>
-  );
+      </div>
+    );
 }

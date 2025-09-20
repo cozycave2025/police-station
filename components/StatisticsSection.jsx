@@ -6,30 +6,30 @@ const StatisticsSection = () => {
   const stats = [
     {
       icon: TrendingUp,
-      title: "Total Complaints Filed",
+      title: "Total des plaintes déposées",
       value: "12,847",
-      change: "+15% this month",
+      change: "+15% ce mois-ci",
       color: "text-blue-500",
     },
     {
       icon: Clock,
-      title: "Resolution Rate",
+      title: "Taux de résolution",
       value: "87.3%",
-      change: "+3% improvement",
+      change: "+3% d'amélioration",
       color: "text-blue-400",
     },
     {
       icon: MapPin,
-      title: "Police Stations Connected",
+      title: "Commissariats connectés",
       value: "247",
-      change: "Across 12 districts",
+      change: "Dans 12 districts",
       color: "text-purple-400",
     },
     {
       icon: Users,
-      title: "Active Cases",
+      title: "Dossiers actifs",
       value: "1,632",
-      change: "Under investigation",
+      change: "En cours d'enquête",
       color: "text-blue-400",
     },
   ]
@@ -41,11 +41,11 @@ const StatisticsSection = () => {
         <div className="text-center mb-16">
           <h2  className="text-3xl md:text-4xl font-bold text-blue-600 
             drop-shadow-[0_0_10px_#3b82f6]">
-            System Performance & Impact
+            Performance et impact du système
           </h2>
           <br />
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Real-time statistics showing the effectiveness and reach of our complaint management system
+            Statistiques en temps réel montrant l'efficacité et la portée de notre système de gestion des plaintes
           </p>
         </div>
 
@@ -75,7 +75,7 @@ const StatisticsSection = () => {
           <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">
-                Cases Resolved This Month
+                Dossiers résolus ce mois-ci
               </span>
               <span className="text-sm font-bold text-blue-500">94%</span>
             </div>
@@ -88,7 +88,7 @@ const StatisticsSection = () => {
           <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">
-                Average Response Time
+                Temps moyen de réponse
               </span>
               <span className="text-sm font-bold text-green-400">2.4 hrs</span>
             </div>
@@ -101,7 +101,7 @@ const StatisticsSection = () => {
           <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">
-                User Satisfaction
+                Satisfaction des utilisateurs
               </span>
               <span className="text-sm font-bold text-blue-400">4.8/5</span>
             </div>
@@ -114,7 +114,7 @@ const StatisticsSection = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-sm text-gray-600">
-            Statistics updated in real-time • Last updated:{" "}
+            Statistiques mises à jour en temps réel • Dernière mise à jour : {" "}
             {new Date().toLocaleString()}
           </p>
         </div>

@@ -40,13 +40,7 @@ export function DashboardHeader() {
           {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Notification Button */}
-            <button className="relative p-2 rounded-full hover:bg-blue-100 transition">
-              <Bell className="h-5 w-5 text-gray-700" />
-              <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-blue-500 rounded-full">
-                3
-              </span>
-            </button>
-
+          
             {/* User Info */}
             <div className="flex items-center space-x-2">
               <div className="bg-blue-100 p-2 rounded-full">

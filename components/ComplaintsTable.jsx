@@ -72,9 +72,13 @@ const ComplaintsTable = () => {
     switch (status?.toLowerCase()) {
       case "pending":
         return "text-yellow-600 bg-yellow-100";
+      case "under investigation":
+        return "text-blue-600 bg-blue-100";
       case "in progress":
       case "in-progress":
         return "text-blue-600 bg-blue-100";
+      case "closed":
+        return "text-green-600 bg-green-100";
       case "resolved":
       case "completed":
         return "text-green-600 bg-green-100";

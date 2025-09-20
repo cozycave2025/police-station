@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 export default function HeroSection() {
   return (
     <section
@@ -22,22 +24,21 @@ export default function HeroSection() {
 </h1>
 
         <h2 className="text-2xl md:text-3xl font-bold text-blue-500 mt-2">
-          Managing Gender-Based Violence in Guinea
+          Lutte contre les violences basées sur le genre en Guinée
         </h2>
 
         <p className="mt-6 text-lg md:text-xl text-gray-200 drop-shadow-[0_0_10px_blue-500]">
-          A powerful digital tool by the Office for the Protection of Gender, Children, and Morals (OPROGEM) to centralize GBV case management, improve transparency, and strengthen public trust in Guinea.
+          Un outil numérique puissant de l’Office de Protection du Genre, de l’Enfance et des Mœurs (OPROGEM) pour centraliser la gestion des cas de VBG, améliorer la transparence et renforcer la confiance du public en Guinée.
         </p>
 
         {/* Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="px-8 py-3 bg-blue-500 text-white rounded-lg text-lg font-semibold shadow-[0_0_15px_blue-500] hover:bg-blue-600 hover:scale-105 transition">
-            Report GBV Case
-          </button>
-
+        
+        <Link href="/login">
           <button className="px-8 py-3 border-2 border-blue-500 text-blue-500 rounded-lg text-lg font-semibold shadow-[0_0_12px_blue-500] hover:bg-blue-500 hover:text-white transition">
-            Login
+            Connexion
           </button>
+        </Link>
         </div>
       </div>
     </section>

@@ -6,39 +6,39 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: Lock,
-      title: "Secure & Confidential",
+      title: "Sécurisé et confidentiel",
       description:
-        "End-to-end encryption ensures your personal information and case details remain completely confidential and protected.",
+        "Le chiffrement de bout en bout garantit la confidentialité et la protection de vos informations personnelles et des détails de votre dossier.",
     },
     {
       icon: FileText,
-      title: "Online Complaint Filing",
+      title: "Dépôt de plainte en ligne",
       description:
-        "File complaints 24/7 from anywhere with our user-friendly online form. No need to visit police stations initially.",
+        "Déposez des plaintes 24h/24 et 7j/7 depuis n'importe où grâce à notre formulaire en ligne convivial. Pas besoin de se rendre au commissariat au départ.",
     },
     {
       icon: Search,
-      title: "Police Case Tracking",
+      title: "Suivi des dossiers",
       description:
-        "Real-time updates on your case status, assigned officers, and investigation progress through our secure portal.",
+        "Mises à jour en temps réel sur le statut de votre dossier, les agents assignés et l'avancement de l'enquête via notre portail sécurisé.",
     },
     {
       icon: BarChart3,
-      title: "Statistics & Reports",
+      title: "Statistiques et rapports",
       description:
-        "Access comprehensive analytics and reports to understand case trends and system performance transparently.",
+        "Accédez à des analyses et rapports détaillés pour comprendre les tendances des dossiers et les performances du système en toute transparence.",
     },
     {
       icon: Bell,
-      title: "Smart Notifications",
+      title: "Notifications intelligentes",
       description:
-        "Receive instant alerts via SMS and email for case updates, hearings, and important procedural developments.",
+        "Recevez des alertes instantanées par SMS et e-mail pour les mises à jour, audiences et développements importants.",
     },
     {
       icon: Users,
-      title: "User-Friendly Experience",
+      title: "Expérience conviviale",
       description:
-        "Our platform is designed to be simple, intuitive, and accessible for everyone regardless of technical skills.",
+        "Notre plateforme est conçue pour être simple, intuitive et accessible à tous, quel que soit le niveau technique.",
     },
   ]
 
@@ -51,11 +51,11 @@ const FeaturesSection = () => {
             className="text-3xl md:text-4xl font-extrabold text-blue-600 
             drop-shadow-[0_0_10px_#3b82f6]"
           >
-            Features & Benefits
+            Fonctionnalités et avantages
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mt-4">
-            Built with the latest security standards and user experience best practices
-            for sensitive case management.
+            Conçu selon les dernières normes de sécurité et les meilleures pratiques UX
+            pour la gestion de dossiers sensibles.
           </p>
         </div>
 
@@ -93,12 +93,11 @@ const FeaturesSection = () => {
         >
           <Lock className="h-10 w-10 text-blue-600 mx-auto mb-4 drop-shadow-[0_0_8px_#3b82f6]" />
           <h3 className="text-lg font-bold text-blue-600 mb-3 drop-shadow-[0_0_6px_#3b82f6]">
-            Government-Grade Security
+            Sécurité de niveau gouvernemental
           </h3>
           <p className="text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
-            Our platform meets the highest security standards with ISO 27001 compliance,
-            regular security audits, and data protection protocols approved by law
-            enforcement agencies.
+            Notre plateforme répond aux normes de sécurité les plus élevées avec une conformité ISO 27001,
+            des audits de sécurité réguliers et des protocoles de protection des données approuvés par les autorités.
           </p>
         </div>
       </div>

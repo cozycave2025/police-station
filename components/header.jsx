@@ -58,17 +58,17 @@ export default function Header() {
             <div className="hidden md:flex items-center gap-5">
               <Link
                 href="/register"
-                aria-label="Register for an account"
+                aria-label="Créer un compte"
                 className="px-4 py-2 border border-blue-600 rounded-md text-blue-600 hover:bg-blue-600 hover:text-white transition"
               >
-                Register
+                S'inscrire
               </Link>
               <Link
                 href="/login"
-                aria-label="Log in to your account"
+                aria-label="Se connecter à votre compte"
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
-                Login
+                Connexion
               </Link>
             </div>
           </div>
@@ -81,17 +81,17 @@ export default function Header() {
             
               <Link
                 href="/register"
-                aria-label="Register for an account"
+                aria-label="Créer un compte"
                 className="px-4 py-2 border border-blue-600 rounded-md text-blue-600 hover:bg-blue-600 hover:text-white transition"
               >
-                Register
+                S'inscrire
               </Link>
               <Link
                 href="/login"
-                aria-label="Log in to your account"
+                aria-label="Se connecter à votre compte"
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
-                Login
+                Connexion
               </Link>
             </nav>
           </div>

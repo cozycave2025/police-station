@@ -22,28 +22,28 @@ const Footer = () => {
               <h3 className="text-lg font-bold text-blue-600">E-OPROGEM</h3>
             </div>
             <p className="text-sm leading-relaxed">
-              A secure government-approved platform for filing and tracking sensitive complaints with complete confidentiality.
+              Une plateforme sécurisée approuvée par le gouvernement pour déposer et suivre des plaintes sensibles en toute confidentialité.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold text-blue-600 mb-4">Quick Links</h4>
+            <h4 className="text-lg font-semibold text-blue-600 mb-4">Liens rapides</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#how-to-file" className="hover:text-blue-600">How to File Complaint</a></li>
-              <li><a href="#track-case" className="hover:text-blue-600">Track Your Case</a></li>
-              <li><a href="#emergency" className="hover:text-blue-600">Emergency Contacts</a></li>
-              <li><a href="#legal" className="hover:text-blue-600">Legal Resources</a></li>
+              <li><a href="#how-to-file" className="hover:text-blue-600">Comment déposer une plainte</a></li>
+              <li><a href="#track-case" className="hover:text-blue-600">Suivre votre dossier</a></li>
+              <li><a href="#emergency" className="hover:text-blue-600">Contacts d'urgence</a></li>
+              <li><a href="#legal" className="hover:text-blue-600">Ressources juridiques</a></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="text-lg font-semibold text-blue-600 mb-4">Contact Us</h4>
+            <h4 className="text-lg font-semibold text-blue-600 mb-4">Nous contacter</h4>
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-blue-600" />
-                <span>1800-123-4567 (24/7 Helpline)</span>
+                <span>1800-123-4567 (Assistance 24/7)</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-blue-600" />
@@ -51,11 +51,11 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-blue-600" />
-                <span>Police Headquarters, State Capital</span>
+                <span>Siège de la police, Capitale</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Clock className="h-4 w-4 text-blue-600" />
-                <span>24/7 Online Support</span>
+                <span>Assistance en ligne 24/7</span>
               </div>
             </div>
           </div>
@@ -63,11 +63,11 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-300 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} SecureCase. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SecureCase. Tous droits réservés.</p>
           <div className="flex space-x-4 mt-3 md:mt-0">
-            <a href="#privacy" className="hover:text-blue-600">Privacy Policy</a>
-            <a href="#terms" className="hover:text-blue-600">Terms of Service</a>
-            <a href="#accessibility" className="hover:text-blue-600">Accessibility</a>
+            <a href="#privacy" className="hover:text-blue-600">Politique de confidentialité</a>
+            <a href="#terms" className="hover:text-blue-600">Conditions d'utilisation</a>
+            <a href="#accessibility" className="hover:text-blue-600">Accessibilité</a>
           </div>
         </div>
       </div>
