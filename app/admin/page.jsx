@@ -22,6 +22,7 @@ import Image from "next/image";
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [name, setName] = useState("");
   const [showCommissionerModal, setShowCommissionerModal] = useState(false);
   const [showStationModal, setShowStationModal] = useState(false);
@@ -851,7 +852,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg">Loading Admin Dashboard...</p>
+          <p className="mt-4 text-gray-600 text-lg">Chargement du tableau de bord administrateur...</p>
         </div>
       </div>
     );
@@ -866,7 +867,11 @@ export default function AdminDashboard() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-blue-900 text-white p-6 flex flex-col">
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-blue-900 text-white p-6 flex flex-col transform transition-transform duration-200 md:static md:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
         <div className="flex items-center mb-8">
           <Image
             src="/logo.jpeg"
@@ -888,15 +893,15 @@ export default function AdminDashboard() {
         </div>
         <nav className="flex flex-col gap-4">
           <button
-            onClick={() => setActiveSection("dashboard")}
+            onClick={() => { setActiveSection("dashboard"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "dashboard" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <Home size={18} /> Dashboard
+            <Home size={18} /> Tableau de bord
           </button>
           <button
-            onClick={() => setActiveSection("commissioners")}
+            onClick={() => { setActiveSection("commissioners"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "commissioners" ? "text-blue-300" : "hover:text-blue-300"
             }`}
@@ -904,7 +909,7 @@ export default function AdminDashboard() {
             <Users size={18} /> Commissaires
           </button>
           <button
-            onClick={() => setActiveSection("stations")}
+            onClick={() => { setActiveSection("stations"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "stations" ? "text-blue-300" : "hover:text-blue-300"
             }`}
@@ -912,7 +917,7 @@ export default function AdminDashboard() {
             <Shield size={18} /> Commissariats
           </button>
           <button
-            onClick={() => setActiveSection("complaints")}
+            onClick={() => { setActiveSection("complaints"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "complaints" ? "text-blue-300" : "hover:text-blue-300"
             }`}
@@ -920,28 +925,28 @@ export default function AdminDashboard() {
             <FileText size={18} /> Plaintes
           </button>
           <button
-            onClick={() => setActiveSection("news")}
+            onClick={() => { setActiveSection("news"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "news" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <Newspaper size={18} /> News Management
+            <Newspaper size={18} /> Gestion des actualités
           </button>
           <button
-            onClick={() => setActiveSection("awareness")}
+            onClick={() => { setActiveSection("awareness"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "awareness" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <MessageSquare size={18} /> Awareness Messages
+            <MessageSquare size={18} /> Messages de sensibilisation
           </button>
           <button
-            onClick={() => setActiveSection("alerts")}
+            onClick={() => { setActiveSection("alerts"); setIsSidebarOpen(false); }}
             className={`flex items-center gap-2 ${
               activeSection === "alerts" ? "text-blue-300" : "hover:text-blue-300"
             }`}
           >
-            <AlertTriangle size={18} /> Urgent Alerts
+            <AlertTriangle size={18} /> Alertes urgentes
           </button>
         </nav>
         
@@ -957,33 +962,57 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
+      {/* Overlay for mobile when sidebar is open */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Main */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+        {/* Mobile top bar */}
+        <div className="md:hidden sticky top-0 z-10 -mx-4 mb-4 px-4 py-3 bg-white border-b">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsSidebarOpen((v) => !v)}
+              className="px-3 py-2 rounded-md bg-blue-600 text-white"
+              aria-label="Basculer le menu"
+            >
+              ☰
+            </button>
+            <div className="flex items-center gap-2">
+              <Image src="/logo.jpeg" alt="logo" width={28} height={28} className="rounded" />
+              <span className="font-semibold">E-OPROGEM</span>
+            </div>
+          </div>
+        </div>
         {activeSection === "dashboard" && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total Commissioners</h3>
+                <h3 className="text-gray-500">Total des commissaires</h3>
                 <p className="text-2xl font-bold">{commissioners.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total Police Stations</h3>
+                <h3 className="text-gray-500">Total des commissariats</h3>
                 <p className="text-2xl font-bold">{stations.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total Complaints</h3>
+                <h3 className="text-gray-500">Total des plaintes</h3>
                 <p className="text-2xl font-bold">{complaints.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total News</h3>
+                <h3 className="text-gray-500">Total des actualités</h3>
                 <p className="text-2xl font-bold">{allNews.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total Awareness Messages</h3>
+                <h3 className="text-gray-500">Total des messages de sensibilisation</h3>
                 <p className="text-2xl font-bold">{awarenessMessages.length}</p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-gray-500">Total Urgent Alerts</h3>
+                <h3 className="text-gray-500">Total des alertes urgentes</h3>
                 <p className="text-2xl font-bold">{alerts.length}</p>
               </div>
             </div>
@@ -1011,8 +1040,8 @@ export default function AdminDashboard() {
                 <thead className="bg-gray-200">
                   <tr>
                     <th className="p-3 text-left">Nom</th>
-                    <th className="p-3 text-left">Username</th>
-                    <th className="p-3 text-left">Badge ID</th>
+                    <th className="p-3 text-left">Nom d'utilisateur</th>
+                    <th className="p-3 text-left">ID de badge</th>
                     <th className="p-3 text-left">Commissariat</th>
                     <th className="p-3 text-left">Ville</th>
                     <th className="p-3 text-left">Téléphone</th>
@@ -1191,7 +1220,7 @@ export default function AdminDashboard() {
                     }}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
-                    Load More Complaints
+                    Charger plus de plaintes
                   </button>
                 </div>
               )}
@@ -1202,7 +1231,7 @@ export default function AdminDashboard() {
         {activeSection === "news" && (
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">News Management</h2>
+              <h2 className="text-xl font-bold">Gestion des actualités</h2>
               <button
                 onClick={() => {
                   resetNewsForm();
@@ -1335,7 +1364,7 @@ export default function AdminDashboard() {
         {activeSection === "alerts" && (
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Urgent Alerts</h2>
+              <h2 className="text-xl font-bold">Alertes urgentes</h2>
               <button
                 onClick={() => {
                   resetAlertForm();

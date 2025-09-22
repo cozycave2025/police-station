@@ -6,7 +6,7 @@ export function DashboardHeader() {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userData") || "null");
+    const user = JSON.parse(localStorage.getItem("userData") || localStorage.getItem("currentUser") || "null");
     setCurrentUser(user);
     
   }, []);
@@ -19,7 +19,7 @@ export function DashboardHeader() {
   return (
     <header className="bg-white border-b border-blue-300 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex flex-wrap gap-3 justify-between items-center min-h-16 py-2">
           {/* Logo & Title */}
           <div className="flex items-center space-x-3">
             <Image
@@ -30,15 +30,15 @@ export function DashboardHeader() {
               className="rounded-lg shadow-lg"
             />
             <div>
-              <h1 className="text-xl font-bold text-blue-600">E-OPROGEM</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-lg sm:text-xl font-bold text-blue-600 leading-tight">E-OPROGEM</h1>
+              <p className="hidden sm:block text-sm text-gray-600 leading-tight">
                 Système de Gestion des Violences Basées sur le Genre
               </p>
             </div>
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             {/* Notification Button */}
           
             {/* User Info */}
@@ -61,11 +61,11 @@ export function DashboardHeader() {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 transition"
-              title="Logout"
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 transition whitespace-nowrap"
+              title="Déconnexion"
             >
               <LogOut className="h-4 w-4" />
-              <span className="text-sm font-medium">Logout</span>
+              <span className="text-sm font-medium">Déconnexion</span>
             </button>
           </div>
         </div>
