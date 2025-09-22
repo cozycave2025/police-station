@@ -61,8 +61,8 @@ export async function POST(req) {
     console.log("All stations in database:", allStations);
     
     const stationExists = await stations.findOne({ 
-      name: { $regex: new RegExp(`^${policeStation.trim()}$`, 'i') }, 
-      city: { $regex: new RegExp(`^${city.trim()}$`, 'i') }
+     name: policeStation,
+     city: city
     });
     console.log("Station found:", stationExists);
     

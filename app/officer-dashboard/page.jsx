@@ -426,21 +426,21 @@ export default function OfficerDashboard() {
 
             {/* Section Statut des rapports */}
             {activeTab === "closed" && (
-              <>
+              <> 
                 <h2 className="text-2xl font-bold mb-6">Statut des rapports</h2>
                 {reportsLoading ? (
                   <div className="bg-white shadow rounded-lg p-8 text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading reports...</p>
+                    <p className="mt-4 text-gray-600">Chargement des rapports...</p>
                   </div>
                 ) : (
                   <div className="bg-white shadow rounded-lg overflow-x-auto">
                     <table className="min-w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-gray-200">
-                          <th className="p-3 border">Title</th>
-                          <th className="p-3 border">Report Status</th>
-                          <th className="p-3 border">Submitted At</th>
+                          <th className="p-3 border">Titre</th>
+                          <th className="p-3 border">Statut du rapport</th>
+                          <th className="p-3 border">Soumis le</th>
                           <th className="p-3 border">Actions</th>
                         </tr>
                       </thead>
@@ -451,7 +451,7 @@ export default function OfficerDashboard() {
                             <td className="p-3 border">{r.status || 'Pending'}</td>
                             <td className="p-3 border">{r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}</td>
                             <td className="p-3 border flex gap-2 flex-wrap">
-                              <button onClick={() => { setSelectedReport(r); setShowReportDetailModal(true); }} className="bg-blue-600 text-white px-3 py-1 rounded">View Details</button>
+                              <button onClick={() => { setSelectedReport(r); setShowReportDetailModal(true); }} className="bg-blue-600 text-white px-3 py-1 rounded">Voir les détails</button>
                             </td>
                           </tr>
                         ))}
@@ -544,14 +544,14 @@ export default function OfficerDashboard() {
         {showReportDetailModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-2xl p-6">
-              <h3 className="text-xl font-semibold mb-4">Report Details</h3>
+              <h3 className="text-xl font-semibold mb-4">Détails du rapport</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Title</p>
+                  <p className="text-sm text-gray-500">Titre</p>
                   <p className="font-medium">{selectedReport?.complaint?.title || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="text-sm text-gray-500">Statut</p>
                   <p className="font-medium">{selectedReport?.complaint?.status || '-'}</p>
                 </div>
                 <div className="md:col-span-2">
@@ -559,15 +559,15 @@ export default function OfficerDashboard() {
                   <p className="font-medium whitespace-pre-line">{selectedReport?.complaint?.description || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Police Station</p>
+                  <p className="text-sm text-gray-500">Commissariat</p>
                   <p className="font-medium">{selectedReport?.policeStation || selectedReport?.complaint?.policeStation || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Submitted At</p>
+                  <p className="text-sm text-gray-500">Soumis le</p>
                   <p className="font-medium">{selectedReport?.createdAt ? new Date(selectedReport.createdAt).toLocaleString() : '-'}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <p className="text-sm text-gray-500">Report File</p>
+                  <p className="text-sm text-gray-500">Fichier du rapport</p>
                   {selectedReport?.reportUrl ? (
                     <a href={selectedReport.reportUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{selectedReport.reportUrl}</a>
                   ) : (
@@ -576,7 +576,7 @@ export default function OfficerDashboard() {
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-6">
-                <button onClick={() => setShowReportDetailModal(false)} className="px-4 py-2 rounded border">Close</button>
+                <button onClick={() => setShowReportDetailModal(false)} className="px-4 py-2 rounded border">Fermer</button>
               </div>
             </div>
           </div>
