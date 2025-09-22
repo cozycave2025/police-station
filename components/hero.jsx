@@ -36,7 +36,7 @@ export default function HeroSection() {
         
         <Link href="/login">
           <button className="px-8 py-3 border-2 border-blue-500 text-blue-500 rounded-lg text-lg font-semibold shadow-[0_0_12px_blue-500] hover:bg-blue-500 hover:text-white transition">
-            Connexion
+          Déposer une plainte
           </button>
         </Link>
         </div>
